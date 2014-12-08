@@ -38,6 +38,7 @@ class MEMMModel:
     def initModelParams(self):
         # init word difctionary
         # init feature set
+        self.allWordsFeatureVecs = self.calcFeatureVecAllWords()
         return;
     
     def initModelFromFile(self, file):
@@ -74,13 +75,12 @@ class MEMMModel:
         return allWordsFeatureVecs;
                     
     def makeL(self):
-        allWordsFeatureVecs = self.calcFeatureVecAllWords()
         def L(*args):
             val = 0;
             i = 0;
             for sentence in self.allSentences:
                 for index in range(0,sentence.len):
-                    val = val + self.product(args, allWordsFeatureVecs[i]);
+                    val = val + self.product(args, self.allWordsFeatureVecs[i]);
                     # calculate the inner sum of the second term
                     innerSum = 0;
                     for tag in self.tagSet:
@@ -94,7 +94,31 @@ class MEMMModel:
         return L;
     
     def makeGradientL(self):
-        
+        def gradientL(*args):
+            val = [0] * self.featureNum;
+            for k in range(0,self.featureNum):
+                i = 0;
+                for sentence in self.allSentences:
+                    for index in range(0,sentence.len):
+                        # empirical counts
+                        val[k] = val[k] + self.allWordsFeatureVecs[i][k];
+                        
+                        # expected count, first calc all P values
+                        P = [0] * len(self.tagSet);
+                        for y in range(0,len(self.tagSet)):
+                            featureVec = self.calcFeatureVecWord(sentence,index,self.tagSet[y],sentence.tag(index - 1),sentence.tag(index - 2));
+                            power = self.product(featureVec, args);
+                            P[y] = math.exp(power);
+                        sumP = sum(P);
+                        expectedCount = 0;
+                        for y in range(0,len(self.tagSet)):
+                            f_k = self.featureSet[k].val(sentence,index,self.tagSet[y],sentence.tag(index - 1),sentence.tag(index - 2));
+                            expectedCount = expectedCount + (f_k * P[y]/sumP);
+                        val[k] = val[k] - expectedCount;
+                        i = i + 1;
+                val[k] = val[k] - (self.lamda*args[k]);
+            return val;
+        return gradientL;
 
           
     def product(self,vec1,vec2):
