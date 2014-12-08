@@ -24,8 +24,10 @@ class morphologicalFeature(feature):
 class unigramWordTagFeature(feature):
     
     def __init__(self,word,tag,name):
-        self.f = lambda (sentence,index,tag): (sentence.word(index) == word) and (sentence.tag(index) == tag)  
         self.name = name;
+        self.tag = tag;
+        self.f = lambda (sentence,index,tag): (sentence.word(index) == word) and (tag == self.tag)  
+        
     
     def val(self,sentence,index,tag,prevTag,prevPrevTag):
         return 1 if self.f((sentence,index,tag)) else 0;

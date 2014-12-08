@@ -2,6 +2,7 @@ import math
 import operator
 import sentence
 from scipy.optimize import fmin_bfgs
+import scipy
 import feature
 
 class MEMMModel:
@@ -138,25 +139,27 @@ class MEMMModel:
                     
     def makeL(self):
         def L(*args):
+            v = args[0];
             val = 0;
             i = 0;
             for sentence in self.allSentences:
                 for index in range(0,sentence.len):
-                    val = val + self.product(args, self.allWordsFeatureVecs[i]);
+                    val = val + self.product(v, self.allWordsFeatureVecs[i]);
                     # calculate the inner sum of the second term
                     innerSum = 0;
                     for tag in self.tagSet:
                         featureVec = self.calcFeatureVecWord(sentence,index,tag,sentence.tag(index - 1),sentence.tag(index - 2))
-                        innerSum += math.exp(self.product(featureVec, args));
+                        innerSum += math.exp(self.product(featureVec, v));
                     val = val - math.log(innerSum)
                     i = i + 1;
-            sqNormV = sum(math.pow(v_k, 2) for v_k in args);
+            sqNormV = sum(math.pow(v_k, 2) for v_k in v);
             val = val - ((self.lamda / 2) * sqNormV)
             return val * (-1); # -1 as we want to maximize it, and fmin_bfgs only computes min
         return L;
     
     def makeGradientL(self):
         def gradientL(*args):
+            v = args[0]
             val = [0] * self.featureNum;
             for k in range(0,self.featureNum):
                 i = 0;
@@ -169,7 +172,7 @@ class MEMMModel:
                         P = [0] * len(self.tagSet);
                         for y in range(0,len(self.tagSet)):
                             featureVec = self.calcFeatureVecWord(sentence,index,self.tagSet[y],sentence.tag(index - 1),sentence.tag(index - 2));
-                            power = self.product(featureVec, args);
+                            power = self.product(featureVec, v);
                             P[y] = math.exp(power);
                         sumP = sum(P);
                         expectedCount = 0;
@@ -178,9 +181,9 @@ class MEMMModel:
                             expectedCount = expectedCount + (f_k * P[y]/sumP);
                         val[k] = val[k] - expectedCount;
                         i = i + 1;
-                val[k] = val[k] - (self.lamda*args[k]);
-            newVal = val.map(lambda x: -1 * x, val); # -1 as we want to maximize it and fmin_bfgs only computes min
-            return newVal;
+                val[k] = val[k] - (self.lamda*v[k]);
+            newVal = map(lambda x: -1 * x, val); # -1 as we want to maximize it and fmin_bfgs only computes min
+            return scipy.array(newVal);
         return gradientL;
 
     def product(self,vec1,vec2):

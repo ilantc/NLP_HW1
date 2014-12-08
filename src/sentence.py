@@ -12,9 +12,9 @@ class sentence:
         return self.words[index];
     
     def toString(self):
-        str = ""
-        str += ' '.join(word for word in self.words) + "\n"
+        mystr = ""
+        mystr += ' '.join(word for word in self.words) + "\n"
         tagsToShow = self.tags[2:];
-        str += ' '.join(tag for tag in tagsToShow) + "\n"
-        return str;
+        mystr += ' '.join(tag for tag in tagsToShow) + "\n"
+        return mystr;
         
