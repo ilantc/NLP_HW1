@@ -1,6 +1,6 @@
 import math
 import operator
-from itertools import product
+from scipy.optimize import fmin_bfgs
 
 class MEMMModel:
     
@@ -46,23 +46,10 @@ class MEMMModel:
         self.initModelParams();
         
     def trainModel(self):
-        v = [0] * len(self.featureSet)
-        notConverged = True;
-        gradient = [0] * self.featureNum;
-        while notConverged:
-            for k in range(0, self.featureNum): 
-                empiricalCount = 0;
-                expectedCount = 0;
-                for sentence in self.allSentences:
-                    for index in range(0,sentence.len):
-                        # consider keeping a cache of calculated features
-                        empiricalCount += self.featureSet[k].val(sentence,index,sentence.tag(index),sentence.tag(index - 1),sentence.tag(index - 2));
-                        pDenominator = 0;
-                        for tag in self.tagSet:
-                            pDenominator = pDenominator + math.exp(product())  
-                            
-                gradient[k] = empiricalCount - expectedCount;
-    
+        v = [0] * len(self.featureSet);
+        vopt = fmin_bfgs(self.makeL(), v, fprime=self.makeGradientL());
+        
+        
     def calcFeatureVecWord(self,sentence,index,tag,prevTag,prevPrevTag):
         return map(lambda x: x.val(sentence,index,tag,prevTag,prevPrevTag),self.featureSet);
     
@@ -90,7 +77,7 @@ class MEMMModel:
                     i = i + 1;
             sqNormV = sum(math.pow(v_k, 2) for v_k in args);
             val = val - ((self.lamda / 2) * sqNormV)
-            return val;
+            return val * (-1); # -1 as we want to maximize it, and fmin_bfgs only computes min
         return L;
     
     def makeGradientL(self):
@@ -117,9 +104,9 @@ class MEMMModel:
                         val[k] = val[k] - expectedCount;
                         i = i + 1;
                 val[k] = val[k] - (self.lamda*args[k]);
-            return val;
+            newVal = val.map(lambda x: -1 * x, val); # -1 as we want to maximize it and fmin_bfgs only computes min
+            return newVal;
         return gradientL;
 
-          
     def product(self,vec1,vec2):
         return sum(map( operator.mul, vec1, vec2))
