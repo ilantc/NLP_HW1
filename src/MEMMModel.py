@@ -1,6 +1,8 @@
 import math
 import operator
+import sentence
 from scipy.optimize import fmin_bfgs
+import feature
 
 class MEMMModel:
     
@@ -18,8 +20,16 @@ class MEMMModel:
         # all possible tags
         self.tagSet = [MEMMModel.startSentenceTag];
         self.lamda = 0;
-        self.v = [];
-        
+        self.allWordsFeatureVecs = [];
+    
+    def show(self):
+        print "sentences are:"
+        for sentence in self.allSentences:
+            print sentence.toString()
+        print self.dictionary
+        for f in self.featureSet:
+            print f.name
+    
     def reset(self):
         self.dictionary = {};
         self.featureSet = [];
@@ -28,28 +38,93 @@ class MEMMModel:
         self.sentenceNum = 0;
         self.tagSet = [MEMMModel.startSentenceTag];
         self.lamda = 0;
-        self.v = [];
+        self.allWordsFeatureVecs = [];
+        self.v = 0;
         
-    def readGoldenFile(self,file):
-        # TODO implement
+    def readGoldenFile(self,wordfile, tagfile):
+        wf = open(wordfile,'rt');
+        tf = open(tagfile,'rt');
         allSentences = [];
+        wlines = wf.readlines()
+        tlines = tf.readlines()
+        for i in range(0,len(wlines)):
+            # new sentence
+            words = wlines[i].split();
+            tags = tlines[i].split();
+            s = sentence.sentence(words,tags);
+            allSentences.append(s);
+        wf.close();
+        tf.close();
         self.allSentences = allSentences;
+        self.sentenceNum = len(allSentences);
     
-    def initModelParams(self):
-        # init word difctionary
+    def initModelParams(self,lamda,featureLevel):
+        for sentence in self.allSentences:
+            for i in range(0,sentence.len):
+                word = sentence.word(i);
+                tag = sentence.tag(i);
+                foundTag = False;
+                if self.dictionary.has_key(word):
+                    for j in range(0,len(self.dictionary[word])):
+                        (tag2,count) = self.dictionary[word][j] 
+                        if tag2 == tag:
+                            self.dictionary[word][j] = (tag, count + 1)
+                            foundTag = True
+                            break
+                    if not foundTag:
+                        self.dictionary[word].append((tag,1))
+                else:
+                    self.dictionary[word] = [(tag,1)];
+                if not foundTag:
+                    if self.tagSet.count(tag) == 0:
+                        self.tagSet.append(tag)
+        # TODO - cleanup tagset?
+        self.lamda = lamda 
         # init feature set
+        self.initFeatureSet(featureLevel)
         self.allWordsFeatureVecs = self.calcFeatureVecAllWords()
         return;
     
-    def initModelFromFile(self, file):
-        self.readGoldenFile(file);
-        self.initModelParams();
+    def initModelFromFile(self, wordfile,tagfile,lamda,featureLevel):
+        self.readGoldenFile(wordfile,tagfile);
+        self.initModelParams(lamda,featureLevel);
         
     def trainModel(self):
         v = [0] * len(self.featureSet);
         vopt = fmin_bfgs(self.makeL(), v, fprime=self.makeGradientL());
+        self.v = vopt;
+    
+    def initFeatureSet(self,featureLevel):
+        # 1 => 001 => basic 
+        # 2 => 010 => medium
+        # 3 => 011 => medium + basic
+        # 4 => 100 => advanced
+        # 5 => 101 => advanced + basic
+        # 6 => 110 => advanced + medium
+        # 7 => 111 => advanced + medium + basic
+        if filter(lambda x: x == featureLevel, [1,3,5,7]):
+            self.initBasicFeatures();
+        if filter(lambda x: x == featureLevel, [2,3,6,7]):
+            self.initMediumFeatures();
+        if filter(lambda x: x == featureLevel, [4,5,6,7]):
+            self.initAdvancedFeatures();
+    
+    def initBasicFeatures(self):
+        f = feature.unigramWordTagFeature("the","DT","the_dt");
+        self.featureSet.append(f)
+        f = feature.unigramWordTagFeature("the","NN","the_nn");
+        self.featureSet.append(f)
+        f = feature.unigramWordTagFeature("plays","VBZ","plays_vbz");
+        self.featureSet.append(f)
+        self.featureNum = self.featureNum + 3;
         
         
+    def initMediumFeatures(self):
+        return
+    
+    def initAdvancedFeatures(self):
+        return
+       
     def calcFeatureVecWord(self,sentence,index,tag,prevTag,prevPrevTag):
         return map(lambda x: x.val(sentence,index,tag,prevTag,prevPrevTag),self.featureSet);
     
