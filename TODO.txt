@@ -1,0 +1,7 @@
+- save + load model
+- implement viterbi
+- implement features:
+	- basic    = word + tag, 		  maybe word + tag + prevTag
+	- medium   = morphological + tag, maybe morph + tag + prev tag
+	- advanced = ?? 
+- implement backoff scheme

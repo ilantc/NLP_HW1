@@ -125,7 +125,7 @@ class MEMMModel:
     def initBasicFeatures(self):
         for word in self.dictionary:
             wordCount = sum(count for (tag,count) in self.dictionary[word]);
-            if (wordCount > 0):
+            if (wordCount > 10):
                 for (tag,count) in self.dictionary[word]:
                     f = f = feature.unigramWordTagFeature(word,tag,word + "_" + tag);
                     self.featureSet.append(f)
