@@ -20,7 +20,7 @@ class MEMMModel:
         self.allSentences = [];
         self.sentenceNum = 0;
         # all possible tags
-        self.tagSet = [MEMMModel.startSentenceTag];
+        self.tagSet = [];
         self.lamda = 0;
         self.allWordsFeatureVecs = [];
         self.verbose = verbose;
@@ -47,18 +47,18 @@ class MEMMModel:
         self.featureNum = 0;
         self.allSentences = [];
         self.sentenceNum = 0;
-        self.tagSet = [MEMMModel.startSentenceTag];
+        self.tagSet = [];
         self.lamda = 0;
         self.allWordsFeatureVecs = [];
         self.v = 0;
         
-    def readGoldenFile(self,wordfile, tagfile, count):
+    def readGoldenFile(self,wordfile, tagfile, numSentences):
         wf = open(wordfile,'rt');
         tf = open(tagfile,'rt');
         allSentences = [];
         wlines = wf.readlines()
         tlines = tf.readlines()
-        for i in range(0,count):
+        for i in range(0,numSentences):
             # new sentence
             words = wlines[i].split();
             tags = tlines[i].split();
@@ -70,6 +70,8 @@ class MEMMModel:
         self.sentenceNum = len(allSentences);
     
     def initModelParams(self,lamda,featureLevel):
+        # init dictionary (map words to (tag,count) tuple list
+        # i.e. dictionary[moshe] -> [(VB,1),(NN,2)]
         for sentence in self.allSentences:
             for i in range(0,sentence.len):
                 word = sentence.word(i);
@@ -97,14 +99,10 @@ class MEMMModel:
         return;
     
     def initModelFromFile(self, wordfile,tagfile,lamda,featureLevel,numSentences):
+        # TODO - add offset
         self.readGoldenFile(wordfile,tagfile,numSentences);
         self.initModelParams(lamda,featureLevel);
-        
-    def trainModel(self):
-        v = [0] * len(self.featureSet);
-        vopt = fmin_bfgs(self.makeL(), v, fprime=self.makeGradientL(), disp=self.verbose);
-        self.v = vopt;
-    
+  
     def initFeatureSet(self,featureLevel):
         # 1 => 001 => basic 
         # 2 => 010 => medium
@@ -127,7 +125,7 @@ class MEMMModel:
     def initBasicFeatures(self):
         for word in self.dictionary:
             wordCount = sum(count for (tag,count) in self.dictionary[word]);
-            if (wordCount > 12):
+            if (wordCount > 0):
                 for (tag,count) in self.dictionary[word]:
                     f = f = feature.unigramWordTagFeature(word,tag,word + "_" + tag);
                     self.featureSet.append(f)
@@ -148,7 +146,7 @@ class MEMMModel:
         return
        
     def calcFeatureVecWord(self,sentence,index,tag,prevTag,prevPrevTag):
-        return map(lambda x: x.val(sentence,index,tag,prevTag,prevPrevTag),self.featureSet);
+        return map(lambda x: x.val(sentence.word(index),tag,prevTag,prevPrevTag),self.featureSet);
     
     def calcFeatureVecAllWords(self):
         allWordsFeatureVecs = [];
@@ -166,6 +164,7 @@ class MEMMModel:
             print "v norm is ", math.sqrt(sum(v_i * v_i for v_i in v));
             val = 0;
             i = 0;
+            s = 0;
             for sentence in self.allSentences:
                 for index in range(0,sentence.len):
                     val = val + self.product(v, self.allWordsFeatureVecs[i]);
@@ -175,9 +174,16 @@ class MEMMModel:
                         featureVec = self.calcFeatureVecWord(sentence,index,tag,sentence.tag(index - 1),sentence.tag(index - 2))
                         exponent = self.product(featureVec, v);
                         # print "exponent is: ", exponent
-                        innerSum += math.exp(exponent);
+                        try:
+                            innerSum += math.exp(exponent);
+                        except OverflowError:
+                            print "overflow error: exponent =", exponent
+                            raise
                     val = val - math.log(innerSum)
                     i = i + 1;
+                s = s + 1;
+                if self.verbose and ((s % 20) == 1):
+                    print "\ts =",s,"out of",self.sentenceNum, "sentences, average iter time =",(time.clock() - t1)/s;
             sqNormV = sum(math.pow(v_k, 2) for v_k in v);
             val = val - ((self.lamda / 2) * sqNormV)
             t2 = time.clock();
@@ -195,7 +201,6 @@ class MEMMModel:
             i = 0;
             s = 0;
             for sentence in self.allSentences:
-                iter_t = time.clock();
                 for index in range(0,sentence.len):
                     P = [0] * len(self.tagSet);
                     for y in range(0,len(self.tagSet)):
@@ -206,10 +211,10 @@ class MEMMModel:
                     for k in range(0,self.featureNum):
                         # empirical counts
                         val[k] = val[k] + self.allWordsFeatureVecs[i][k];
-                        # expected count, first calc all P values
+                        # expected count
                         expectedCount = 0;
                         for y in range(0,len(self.tagSet)):
-                            f_k = self.featureSet[k].val(sentence,index,self.tagSet[y],sentence.tag(index - 1),sentence.tag(index - 2));
+                            f_k = self.featureSet[k].val(sentence.word(index),self.tagSet[y],sentence.tag(index - 1),sentence.tag(index - 2));
                             expectedCount = expectedCount + (f_k * P[y]/sumP);
                         val[k] = val[k] - expectedCount;
                         val[k] = val[k] - (self.lamda*v[k]);
@@ -225,3 +230,13 @@ class MEMMModel:
 
     def product(self,vec1,vec2):
         return sum(map( operator.mul, vec1, vec2))
+    
+    def trainModel(self):
+        v = [0.1] * len(self.featureSet);
+        try:
+            vopt = fmin_bfgs(self.makeL(), v, fprime=self.makeGradientL(), disp=self.verbose);
+        except OverflowError:
+            print "math overflow error!"
+            return 
+        self.v = vopt;
+    

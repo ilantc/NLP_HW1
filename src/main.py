@@ -6,9 +6,9 @@ import winsound;
 # tagfile = "../data/sec2-21/small.pos";
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
-lamda = 10;
+lamda = 0.5;
 featureLevel = 1; # basic
-numSentences = 1000;
+numSentences = 10;
 verbose = True
 
 print "initializing..."
