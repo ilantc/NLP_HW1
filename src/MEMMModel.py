@@ -4,12 +4,13 @@ import sentence
 from scipy.optimize import fmin_bfgs
 import scipy
 import feature
+import time
 
 class MEMMModel:
     
     startSentenceTag = '*';
     
-    def __init__(self):
+    def __init__(self,verbose):
         # dirctionary is amapping from word to (tag,count) tuple list
         self.dictionary = {};
         # an ordered list of functions from (sentence,index,tag_i-1.tag_i-2) to bool
@@ -22,6 +23,15 @@ class MEMMModel:
         self.tagSet = [MEMMModel.startSentenceTag];
         self.lamda = 0;
         self.allWordsFeatureVecs = [];
+        self.verbose = verbose;
+    
+    def summarize(self):
+        print "MODEL SUMMARY:"
+        print   "\tnum sentences =", self.sentenceNum, \
+              "\n\tnum features  =", self.featureNum, \
+              "\n\tnum tags      =", len(self.tagSet), \
+              "\n\tlamda         =", self.lamda, \
+              "\n\tnum words     =", len(self.allWordsFeatureVecs) 
     
     def show(self):
         print "sentences are:"
@@ -42,13 +52,13 @@ class MEMMModel:
         self.allWordsFeatureVecs = [];
         self.v = 0;
         
-    def readGoldenFile(self,wordfile, tagfile):
+    def readGoldenFile(self,wordfile, tagfile, count):
         wf = open(wordfile,'rt');
         tf = open(tagfile,'rt');
         allSentences = [];
         wlines = wf.readlines()
         tlines = tf.readlines()
-        for i in range(0,len(wlines)):
+        for i in range(0,count):
             # new sentence
             words = wlines[i].split();
             tags = tlines[i].split();
@@ -86,13 +96,13 @@ class MEMMModel:
         self.allWordsFeatureVecs = self.calcFeatureVecAllWords()
         return;
     
-    def initModelFromFile(self, wordfile,tagfile,lamda,featureLevel):
-        self.readGoldenFile(wordfile,tagfile);
+    def initModelFromFile(self, wordfile,tagfile,lamda,featureLevel,numSentences):
+        self.readGoldenFile(wordfile,tagfile,numSentences);
         self.initModelParams(lamda,featureLevel);
         
     def trainModel(self):
         v = [0] * len(self.featureSet);
-        vopt = fmin_bfgs(self.makeL(), v, fprime=self.makeGradientL());
+        vopt = fmin_bfgs(self.makeL(), v, fprime=self.makeGradientL(), disp=self.verbose);
         self.v = vopt;
     
     def initFeatureSet(self,featureLevel):
@@ -103,21 +113,32 @@ class MEMMModel:
         # 5 => 101 => advanced + basic
         # 6 => 110 => advanced + medium
         # 7 => 111 => advanced + medium + basic
+        print "calculating features..."
+        t1 = time.clock();
         if filter(lambda x: x == featureLevel, [1,3,5,7]):
             self.initBasicFeatures();
         if filter(lambda x: x == featureLevel, [2,3,6,7]):
             self.initMediumFeatures();
         if filter(lambda x: x == featureLevel, [4,5,6,7]):
             self.initAdvancedFeatures();
+        t2 = time.clock();
+        print "time to calc features:", t2 - t1;
     
     def initBasicFeatures(self):
-        f = feature.unigramWordTagFeature("the","DT","the_dt");
-        self.featureSet.append(f)
-        f = feature.unigramWordTagFeature("the","NN","the_nn");
-        self.featureSet.append(f)
-        f = feature.unigramWordTagFeature("plays","VBZ","plays_vbz");
-        self.featureSet.append(f)
-        self.featureNum = self.featureNum + 3;
+        for word in self.dictionary:
+            wordCount = sum(count for (tag,count) in self.dictionary[word]);
+            if (wordCount > 12):
+                for (tag,count) in self.dictionary[word]:
+                    f = f = feature.unigramWordTagFeature(word,tag,word + "_" + tag);
+                    self.featureSet.append(f)
+                    self.featureNum = self.featureNum + 1;
+#         f = feature.unigramWordTagFeature("the","DT","the_dt");
+#         self.featureSet.append(f)
+#         f = feature.unigramWordTagFeature("the","NN","the_nn");
+#         self.featureSet.append(f)
+#         f = feature.unigramWordTagFeature("plays","VBZ","plays_vbz");
+#         self.featureSet.append(f)
+#         self.featureNum = self.featureNum + 3;
         
         
     def initMediumFeatures(self):
@@ -139,7 +160,10 @@ class MEMMModel:
                     
     def makeL(self):
         def L(*args):
+            print "calculating L..."
+            t1 = time.clock();
             v = args[0];
+            print "v norm is ", math.sqrt(sum(v_i * v_i for v_i in v));
             val = 0;
             i = 0;
             for sentence in self.allSentences:
@@ -149,19 +173,26 @@ class MEMMModel:
                     innerSum = 0;
                     for tag in self.tagSet:
                         featureVec = self.calcFeatureVecWord(sentence,index,tag,sentence.tag(index - 1),sentence.tag(index - 2))
-                        innerSum += math.exp(self.product(featureVec, v));
+                        exponent = self.product(featureVec, v);
+                        # print "exponent is: ", exponent
+                        innerSum += math.exp(exponent);
                     val = val - math.log(innerSum)
                     i = i + 1;
             sqNormV = sum(math.pow(v_k, 2) for v_k in v);
             val = val - ((self.lamda / 2) * sqNormV)
+            t2 = time.clock();
+            print "time to calc L:", t2 - t1;
             return val * (-1); # -1 as we want to maximize it, and fmin_bfgs only computes min
         return L;
     
     def makeGradientL(self):
         def gradientL(*args):
+            print "calculating grad L..."
+            t1 = time.clock();
             v = args[0]
             val = [0] * self.featureNum;
             for k in range(0,self.featureNum):
+                iter_t = time.clock();
                 i = 0;
                 for sentence in self.allSentences:
                     for index in range(0,sentence.len):
@@ -182,7 +213,11 @@ class MEMMModel:
                         val[k] = val[k] - expectedCount;
                         i = i + 1;
                 val[k] = val[k] - (self.lamda*v[k]);
+                if self.verbose:
+                    print "k=",k,", iter time =",time.clock() - iter_t;
             newVal = map(lambda x: -1 * x, val); # -1 as we want to maximize it and fmin_bfgs only computes min
+            t2 = time.clock();
+            print "time to calc Grad L:", t2 - t1;
             return scipy.array(newVal);
         return gradientL;
 
