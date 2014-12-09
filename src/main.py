@@ -6,9 +6,9 @@ import time;
 # tagfile = "../data/sec2-21/small.pos";
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
-lamda = 0.5;
+lamda = 10;
 featureLevel = 1; # basic
-numSentences = 1000;
+numSentences = 400;
 verbose = True
 
 print "initializing..."

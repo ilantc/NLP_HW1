@@ -26,7 +26,8 @@ class unigramWordTagFeature(feature):
     def __init__(self,word,tag,name):
         self.name = name;
         self.tag = tag;
-        self.f = lambda (sentence,index,tag): (sentence.word(index) == word) and (tag == self.tag)  
+        self.word = word;
+        self.f = lambda (sentence,index,tag): (sentence.word(index) == self.word) and (tag == self.tag)  
         
     
     def val(self,sentence,index,tag,prevTag,prevPrevTag):

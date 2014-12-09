@@ -191,30 +191,32 @@ class MEMMModel:
             t1 = time.clock();
             v = args[0]
             val = [0] * self.featureNum;
-            for k in range(0,self.featureNum):
+            
+            i = 0;
+            s = 0;
+            for sentence in self.allSentences:
                 iter_t = time.clock();
-                i = 0;
-                for sentence in self.allSentences:
-                    for index in range(0,sentence.len):
+                for index in range(0,sentence.len):
+                    P = [0] * len(self.tagSet);
+                    for y in range(0,len(self.tagSet)):
+                        featureVec = self.calcFeatureVecWord(sentence,index,self.tagSet[y],sentence.tag(index - 1),sentence.tag(index - 2));
+                        power = self.product(featureVec, v);
+                        P[y] = math.exp(power);
+                    sumP = sum(P);
+                    for k in range(0,self.featureNum):
                         # empirical counts
                         val[k] = val[k] + self.allWordsFeatureVecs[i][k];
-                        
                         # expected count, first calc all P values
-                        P = [0] * len(self.tagSet);
-                        for y in range(0,len(self.tagSet)):
-                            featureVec = self.calcFeatureVecWord(sentence,index,self.tagSet[y],sentence.tag(index - 1),sentence.tag(index - 2));
-                            power = self.product(featureVec, v);
-                            P[y] = math.exp(power);
-                        sumP = sum(P);
                         expectedCount = 0;
                         for y in range(0,len(self.tagSet)):
                             f_k = self.featureSet[k].val(sentence,index,self.tagSet[y],sentence.tag(index - 1),sentence.tag(index - 2));
                             expectedCount = expectedCount + (f_k * P[y]/sumP);
                         val[k] = val[k] - expectedCount;
-                        i = i + 1;
-                val[k] = val[k] - (self.lamda*v[k]);
-                if self.verbose:
-                    print "k=",k,", iter time =",time.clock() - iter_t;
+                        val[k] = val[k] - (self.lamda*v[k]);
+                    i = i + 1;
+                s = s + 1;
+                if self.verbose and ((s % 20) == 1):
+                    print "\ts =",s,"out of",self.sentenceNum, "sentences, average iter time =",(time.clock() - t1)/s;
             newVal = map(lambda x: -1 * x, val); # -1 as we want to maximize it and fmin_bfgs only computes min
             t2 = time.clock();
             print "time to calc Grad L:", t2 - t1;
