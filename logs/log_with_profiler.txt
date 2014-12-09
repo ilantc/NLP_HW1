@@ -1,0 +1,484 @@
+initializing...
+calculating features...
+time to calc features: 0.00127601653418
+time to initialize:  0.11182457082
+MODEL SUMMARY:
+	num sentences = 100 
+	num features  = 39 
+	num tags      = 39 
+	lamda         = 0.5 
+	num words     = 2689
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.277080937846
+	s = 21 out of 100 sentences, average iter time = 0.141106136582
+	s = 41 out of 100 sentences, average iter time = 0.141502419551
+	s = 61 out of 100 sentences, average iter time = 0.145524299767
+	s = 81 out of 100 sentences, average iter time = 0.157171019537
+time to calc Grad L: 15.1836081232
+calculating L...
+v norm is  0.62449979984
+	s = 1 out of 100 sentences, average iter time = 0.152175612719
+	s = 21 out of 100 sentences, average iter time = 0.0751945142861
+	s = 41 out of 100 sentences, average iter time = 0.0734311890743
+	s = 61 out of 100 sentences, average iter time = 0.0747902108653
+	s = 81 out of 100 sentences, average iter time = 0.0821588923544
+time to calc L: 8.01341341819
+calculating L...
+v norm is  700.298317343
+	s = 1 out of 100 sentences, average iter time = 0.136021490932
+	s = 21 out of 100 sentences, average iter time = 0.071748333838
+	s = 41 out of 100 sentences, average iter time = 0.0734050807542
+	s = 61 out of 100 sentences, average iter time = 0.0768936955206
+	s = 81 out of 100 sentences, average iter time = 0.0828482730449
+time to calc L: 7.9942795095
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.259167199221
+	s = 21 out of 100 sentences, average iter time = 0.14330663153
+	s = 41 out of 100 sentences, average iter time = 0.143854421362
+	s = 61 out of 100 sentences, average iter time = 0.146332888463
+	s = 81 out of 100 sentences, average iter time = 0.160756098764
+time to calc Grad L: 15.6650195478
+calculating L...
+v norm is  357.358526291
+	s = 1 out of 100 sentences, average iter time = 0.166901272183
+	s = 21 out of 100 sentences, average iter time = 0.0745078973028
+	s = 41 out of 100 sentences, average iter time = 0.0749113452821
+	s = 61 out of 100 sentences, average iter time = 0.0793459670354
+	s = 81 out of 100 sentences, average iter time = 0.0849352430376
+time to calc L: 8.16919852457
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.342148724904
+	s = 21 out of 100 sentences, average iter time = 0.150517827655
+	s = 41 out of 100 sentences, average iter time = 0.14895568229
+	s = 61 out of 100 sentences, average iter time = 0.151227410304
+	s = 81 out of 100 sentences, average iter time = 0.162295340969
+time to calc Grad L: 15.6220654563
+calculating L...
+v norm is  188.290096799
+	s = 1 out of 100 sentences, average iter time = 0.139944026736
+	s = 21 out of 100 sentences, average iter time = 0.0896335239172
+	s = 41 out of 100 sentences, average iter time = 0.0851870234463
+	s = 61 out of 100 sentences, average iter time = 0.084823464733
+	s = 81 out of 100 sentences, average iter time = 0.0906071133698
+time to calc L: 8.58194836586
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.304612345452
+	s = 21 out of 100 sentences, average iter time = 0.164761209304
+	s = 41 out of 100 sentences, average iter time = 0.160876795728
+	s = 61 out of 100 sentences, average iter time = 0.163335901446
+	s = 81 out of 100 sentences, average iter time = 0.175635739469
+time to calc Grad L: 16.8387313733
+calculating L...
+v norm is  100.917418648
+	s = 1 out of 100 sentences, average iter time = 0.135684902705
+	s = 21 out of 100 sentences, average iter time = 0.0767969559947
+	s = 41 out of 100 sentences, average iter time = 0.0761350494604
+	s = 61 out of 100 sentences, average iter time = 0.0773544821559
+	s = 81 out of 100 sentences, average iter time = 0.0850194618358
+time to calc L: 8.25398464614
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.270410755367
+	s = 21 out of 100 sentences, average iter time = 0.142451986369
+	s = 41 out of 100 sentences, average iter time = 0.142344784693
+	s = 61 out of 100 sentences, average iter time = 0.147603852339
+	s = 81 out of 100 sentences, average iter time = 0.157659569066
+time to calc Grad L: 15.4545314586
+calculating L...
+v norm is  54.5073371736
+	s = 1 out of 100 sentences, average iter time = 0.138020794813
+	s = 21 out of 100 sentences, average iter time = 0.0838126966369
+	s = 41 out of 100 sentences, average iter time = 0.0813021113068
+	s = 61 out of 100 sentences, average iter time = 0.081705608124
+	s = 81 out of 100 sentences, average iter time = 0.0880461359208
+time to calc L: 8.54762391352
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.258620507491
+	s = 21 out of 100 sentences, average iter time = 0.145006707543
+	s = 41 out of 100 sentences, average iter time = 0.14551201254
+	s = 61 out of 100 sentences, average iter time = 0.151296692597
+	s = 81 out of 100 sentences, average iter time = 0.16264359416
+time to calc Grad L: 15.7404910807
+calculating L...
+v norm is  29.455592088
+	s = 1 out of 100 sentences, average iter time = 0.152679438504
+	s = 21 out of 100 sentences, average iter time = 0.0771825194978
+	s = 41 out of 100 sentences, average iter time = 0.0792913657083
+	s = 61 out of 100 sentences, average iter time = 0.0805202672656
+	s = 81 out of 100 sentences, average iter time = 0.087303088946
+time to calc L: 8.35710501522
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.269056855638
+	s = 21 out of 100 sentences, average iter time = 0.141794766051
+	s = 41 out of 100 sentences, average iter time = 0.143349631056
+	s = 61 out of 100 sentences, average iter time = 0.149197359931
+	s = 81 out of 100 sentences, average iter time = 0.160026091951
+time to calc Grad L: 15.6336051497
+calculating L...
+v norm is  15.8136929275
+	s = 1 out of 100 sentences, average iter time = 0.13705208484
+	s = 21 out of 100 sentences, average iter time = 0.0770800552278
+	s = 41 out of 100 sentences, average iter time = 0.0790253936398
+	s = 61 out of 100 sentences, average iter time = 0.0812186971155
+	s = 81 out of 100 sentences, average iter time = 0.0864218401086
+time to calc L: 8.28098475753
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.280710053241
+	s = 21 out of 100 sentences, average iter time = 0.148695565012
+	s = 41 out of 100 sentences, average iter time = 0.149807398128
+	s = 61 out of 100 sentences, average iter time = 0.152974902742
+	s = 81 out of 100 sentences, average iter time = 0.163299370066
+time to calc Grad L: 15.7824897446
+calculating L...
+v norm is  8.34862762346
+	s = 1 out of 100 sentences, average iter time = 0.151240410632
+	s = 21 out of 100 sentences, average iter time = 0.0762641647905
+	s = 41 out of 100 sentences, average iter time = 0.0749407594781
+	s = 61 out of 100 sentences, average iter time = 0.0768772954121
+	s = 81 out of 100 sentences, average iter time = 0.083027935839
+time to calc L: 8.0967659456
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.286931350793
+	s = 21 out of 100 sentences, average iter time = 0.148919655291
+	s = 41 out of 100 sentences, average iter time = 0.147431460009
+	s = 61 out of 100 sentences, average iter time = 0.153551400704
+	s = 81 out of 100 sentences, average iter time = 0.166339393639
+time to calc Grad L: 16.1725321064
+calculating L...
+v norm is  4.25090458616
+	s = 1 out of 100 sentences, average iter time = 0.150338414558
+	s = 21 out of 100 sentences, average iter time = 0.0726652654304
+	s = 41 out of 100 sentences, average iter time = 0.0743194536149
+	s = 61 out of 100 sentences, average iter time = 0.0778831505923
+	s = 81 out of 100 sentences, average iter time = 0.0841221429277
+time to calc L: 8.15131769008
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.287926021832
+	s = 21 out of 100 sentences, average iter time = 0.161914821458
+	s = 41 out of 100 sentences, average iter time = 0.152655597912
+	s = 61 out of 100 sentences, average iter time = 0.154171531665
+	s = 81 out of 100 sentences, average iter time = 0.166066213618
+time to calc Grad L: 16.2000900789
+calculating L...
+v norm is  1.99529605388
+	s = 1 out of 100 sentences, average iter time = 0.135978624987
+	s = 21 out of 100 sentences, average iter time = 0.0781689968448
+	s = 41 out of 100 sentences, average iter time = 0.0788361782653
+	s = 61 out of 100 sentences, average iter time = 0.0800796021878
+	s = 81 out of 100 sentences, average iter time = 0.0879787884607
+time to calc L: 8.49749188943
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.276509794416
+	s = 21 out of 100 sentences, average iter time = 0.15188216356
+	s = 41 out of 100 sentences, average iter time = 0.151077833695
+	s = 61 out of 100 sentences, average iter time = 0.153260598176
+	s = 81 out of 100 sentences, average iter time = 0.163627013913
+time to calc Grad L: 15.9053942565
+calculating L...
+v norm is  0.750285650754
+	s = 1 out of 100 sentences, average iter time = 0.152115841895
+	s = 21 out of 100 sentences, average iter time = 0.0778842876231
+	s = 41 out of 100 sentences, average iter time = 0.0767632615853
+	s = 61 out of 100 sentences, average iter time = 0.0770764572616
+	s = 81 out of 100 sentences, average iter time = 0.0845026592445
+time to calc L: 8.26084923474
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.312629484585
+	s = 21 out of 100 sentences, average iter time = 0.142238835387
+	s = 41 out of 100 sentences, average iter time = 0.146812458687
+	s = 61 out of 100 sentences, average iter time = 0.151156806699
+	s = 81 out of 100 sentences, average iter time = 0.162302105157
+time to calc Grad L: 15.6751836066
+calculating L...
+v norm is  0.179722359964
+	s = 1 out of 100 sentences, average iter time = 0.161335340587
+	s = 21 out of 100 sentences, average iter time = 0.0788942391779
+	s = 41 out of 100 sentences, average iter time = 0.0778687567734
+	s = 61 out of 100 sentences, average iter time = 0.0801718614588
+	s = 81 out of 100 sentences, average iter time = 0.0858802690364
+time to calc L: 8.30068739467
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.291467895973
+	s = 21 out of 100 sentences, average iter time = 0.144370848323
+	s = 41 out of 100 sentences, average iter time = 0.149221683809
+	s = 61 out of 100 sentences, average iter time = 0.149566387117
+	s = 81 out of 100 sentences, average iter time = 0.159548037163
+time to calc Grad L: 15.3946190561
+calculating L...
+v norm is  0.469697161197
+	s = 1 out of 100 sentences, average iter time = 0.137663981105
+	s = 21 out of 100 sentences, average iter time = 0.0763593553623
+	s = 41 out of 100 sentences, average iter time = 0.0754936653713
+	s = 61 out of 100 sentences, average iter time = 0.0780567522243
+	s = 81 out of 100 sentences, average iter time = 0.0849309385544
+time to calc L: 8.28619719602
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.276393271496
+	s = 21 out of 100 sentences, average iter time = 0.147594203484
+	s = 41 out of 100 sentences, average iter time = 0.149481139842
+	s = 61 out of 100 sentences, average iter time = 0.151656223161
+	s = 81 out of 100 sentences, average iter time = 0.166793947068
+time to calc Grad L: 16.1627876509
+calculating L...
+v norm is  0.593656093249
+	s = 1 out of 100 sentences, average iter time = 0.159493916206
+	s = 21 out of 100 sentences, average iter time = 0.0775552174675
+	s = 41 out of 100 sentences, average iter time = 0.0780298169827
+	s = 61 out of 100 sentences, average iter time = 0.080360076706
+	s = 81 out of 100 sentences, average iter time = 0.087037858243
+time to calc L: 8.3968169923
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.306298909062
+	s = 21 out of 100 sentences, average iter time = 0.143139163973
+	s = 41 out of 100 sentences, average iter time = 0.142944613408
+	s = 61 out of 100 sentences, average iter time = 0.14607090242
+	s = 81 out of 100 sentences, average iter time = 0.156839861295
+time to calc Grad L: 15.3029031414
+calculating L...
+v norm is  0.618932749359
+	s = 1 out of 100 sentences, average iter time = 0.168965780599
+	s = 21 out of 100 sentences, average iter time = 0.0800645858399
+	s = 41 out of 100 sentences, average iter time = 0.0792593230098
+	s = 61 out of 100 sentences, average iter time = 0.0802237984351
+	s = 81 out of 100 sentences, average iter time = 0.0867448999598
+time to calc L: 8.34236818647
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.288814433628
+	s = 21 out of 100 sentences, average iter time = 0.147843952954
+	s = 41 out of 100 sentences, average iter time = 0.152400964482
+	s = 61 out of 100 sentences, average iter time = 0.155696736813
+	s = 81 out of 100 sentences, average iter time = 0.166369361042
+time to calc Grad L: 16.0796044741
+calculating L...
+v norm is  0.623513442116
+	s = 1 out of 100 sentences, average iter time = 0.137539911364
+	s = 21 out of 100 sentences, average iter time = 0.0804994983664
+	s = 41 out of 100 sentences, average iter time = 0.0784284511244
+	s = 61 out of 100 sentences, average iter time = 0.0804719923533
+	s = 81 out of 100 sentences, average iter time = 0.0859037815772
+time to calc L: 8.41783005947
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.265995864946
+	s = 21 out of 100 sentences, average iter time = 0.144588929894
+	s = 41 out of 100 sentences, average iter time = 0.151391052546
+	s = 61 out of 100 sentences, average iter time = 0.153704143417
+	s = 81 out of 100 sentences, average iter time = 0.163315749463
+time to calc Grad L: 15.7039735221
+calculating L...
+v norm is  0.624325616762
+	s = 1 out of 100 sentences, average iter time = 0.168114499164
+	s = 21 out of 100 sentences, average iter time = 0.0803049197526
+	s = 41 out of 100 sentences, average iter time = 0.0804042751881
+	s = 61 out of 100 sentences, average iter time = 0.0811231172432
+	s = 81 out of 100 sentences, average iter time = 0.0869459510043
+time to calc L: 8.3375590501
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.260611660805
+	s = 21 out of 100 sentences, average iter time = 0.146664923854
+	s = 41 out of 100 sentences, average iter time = 0.146950583923
+	s = 61 out of 100 sentences, average iter time = 0.150429827595
+	s = 81 out of 100 sentences, average iter time = 0.162393542816
+time to calc Grad L: 15.760967418
+calculating L...
+v norm is  0.624469058471
+	s = 1 out of 100 sentences, average iter time = 0.152107087582
+	s = 21 out of 100 sentences, average iter time = 0.0764447566289
+	s = 41 out of 100 sentences, average iter time = 0.0794254119789
+	s = 61 out of 100 sentences, average iter time = 0.0805514789387
+	s = 81 out of 100 sentences, average iter time = 0.0858044728634
+time to calc L: 8.42321184863
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.275266682022
+	s = 21 out of 100 sentences, average iter time = 0.143663143365
+	s = 41 out of 100 sentences, average iter time = 0.144244176024
+	s = 61 out of 100 sentences, average iter time = 0.147308011998
+	s = 81 out of 100 sentences, average iter time = 0.159858142569
+time to calc Grad L: 15.4396823332
+calculating L...
+v norm is  0.624493087396
+	s = 1 out of 100 sentences, average iter time = 0.145457432457
+	s = 21 out of 100 sentences, average iter time = 0.0786141011737
+	s = 41 out of 100 sentences, average iter time = 0.077808338027
+	s = 61 out of 100 sentences, average iter time = 0.0786077543029
+	s = 81 out of 100 sentences, average iter time = 0.0836578773927
+time to calc L: 8.03897329421
+calculating grad L...
+	s = 1 out of 100 sentences, average iter time = 0.258695371957
+	s = 21 out of 100 sentences, average iter time = 0.133693576892
+	s = 41 out of 100 sentences, average iter time = 0.134090292511
+	s = 61 out of 100 sentences, average iter time = 0.136903464423
+	s = 81 out of 100 sentences, average iter time = 0.1498704781
+time to calc Grad L: 14.6545140707
+calculating L...
+v norm is  700.298317343
+	s = 1 out of 100 sentences, average iter time = 0.146380861503
+	s = 21 out of 100 sentences, average iter time = 0.0729256667002
+	s = 41 out of 100 sentences, average iter time = 0.0777305431849
+	s = 61 out of 100 sentences, average iter time = 0.0788245336499
+	s = 81 out of 100 sentences, average iter time = 0.0854218881585
+time to calc L: 8.19340842521
+calculating L...
+v norm is  248.279926493
+	s = 1 out of 100 sentences, average iter time = 0.145526259466
+	s = 21 out of 100 sentences, average iter time = 0.0748596510468
+	s = 41 out of 100 sentences, average iter time = 0.0738526477485
+	s = 61 out of 100 sentences, average iter time = 0.0774698866615
+	s = 81 out of 100 sentences, average iter time = 0.0832717745647
+time to calc L: 8.12956744941
+calculating L...
+v norm is  85.7390518433
+	s = 1 out of 100 sentences, average iter time = 0.15646220718
+	s = 21 out of 100 sentences, average iter time = 0.0764850782166
+	s = 41 out of 100 sentences, average iter time = 0.0778589569499
+	s = 61 out of 100 sentences, average iter time = 0.0791483145501
+	s = 81 out of 100 sentences, average iter time = 0.0853644689611
+time to calc L: 8.20242566909
+calculating L...
+v norm is  31.0780405868
+	s = 1 out of 100 sentences, average iter time = 0.15300002747
+	s = 21 out of 100 sentences, average iter time = 0.0745189803488
+	s = 41 out of 100 sentences, average iter time = 0.0755223212037
+	s = 61 out of 100 sentences, average iter time = 0.076903202041
+	s = 81 out of 100 sentences, average iter time = 0.0826196882151
+time to calc L: 8.01083814091
+calculating L...
+v norm is  11.1340539673
+	s = 1 out of 100 sentences, average iter time = 0.147802078878
+	s = 21 out of 100 sentences, average iter time = 0.0753964097227
+	s = 41 out of 100 sentences, average iter time = 0.0750874255063
+	s = 61 out of 100 sentences, average iter time = 0.0774033261726
+	s = 81 out of 100 sentences, average iter time = 0.0839653479336
+time to calc L: 8.28864598858
+calculating L...
+v norm is  3.77853252717
+	s = 1 out of 100 sentences, average iter time = 0.140196392438
+	s = 21 out of 100 sentences, average iter time = 0.0716797224518
+	s = 41 out of 100 sentences, average iter time = 0.0764605420195
+	s = 61 out of 100 sentences, average iter time = 0.0777133743326
+	s = 81 out of 100 sentences, average iter time = 0.0852012414666
+time to calc L: 8.21649234013
+calculating L...
+v norm is  1.05162412588
+	s = 1 out of 100 sentences, average iter time = 0.177596325362
+	s = 21 out of 100 sentences, average iter time = 0.0803677668049
+	s = 41 out of 100 sentences, average iter time = 0.0786433036028
+	s = 61 out of 100 sentences, average iter time = 0.0808308152478
+	s = 81 out of 100 sentences, average iter time = 0.0862807723173
+time to calc L: 8.25971087222
+calculating L...
+v norm is  0.180228376495
+	s = 1 out of 100 sentences, average iter time = 0.152138482358
+	s = 21 out of 100 sentences, average iter time = 0.0744532439422
+	s = 41 out of 100 sentences, average iter time = 0.0767838625666
+	s = 61 out of 100 sentences, average iter time = 0.0783497321965
+	s = 81 out of 100 sentences, average iter time = 0.0846806859623
+time to calc L: 8.2672193556
+calculating L...
+v norm is  0.410533104446
+	s = 1 out of 100 sentences, average iter time = 0.145887601267
+	s = 21 out of 100 sentences, average iter time = 0.0712995495353
+	s = 41 out of 100 sentences, average iter time = 0.0731064622414
+	s = 61 out of 100 sentences, average iter time = 0.076189559779
+	s = 81 out of 100 sentences, average iter time = 0.0824434913685
+time to calc L: 8.06260058026
+calculating L...
+v norm is  0.542942959119
+	s = 1 out of 100 sentences, average iter time = 0.14737855127
+	s = 21 out of 100 sentences, average iter time = 0.090519376981
+	s = 41 out of 100 sentences, average iter time = 0.0910227115658
+	s = 61 out of 100 sentences, average iter time = 0.0902236384425
+	s = 81 out of 100 sentences, average iter time = 0.0949365439605
+time to calc L: 9.0114364529
+calculating L...
+v norm is  0.593818789296
+	s = 1 out of 100 sentences, average iter time = 0.183993614785
+	s = 21 out of 100 sentences, average iter time = 0.0825481656459
+	s = 41 out of 100 sentences, average iter time = 0.0799389418722
+	s = 61 out of 100 sentences, average iter time = 0.0815072875595
+	s = 81 out of 100 sentences, average iter time = 0.0869502405802
+time to calc L: 8.41713243132
+calculating L...
+v norm is  0.612992392963
+	s = 1 out of 100 sentences, average iter time = 0.182204414407
+	s = 21 out of 100 sentences, average iter time = 0.0793496790581
+	s = 41 out of 100 sentences, average iter time = 0.0806479454795
+	s = 61 out of 100 sentences, average iter time = 0.0817593117988
+	s = 81 out of 100 sentences, average iter time = 0.0864807500361
+time to calc L: 8.34750757173
+Warning: Desired error not necessarily achieved due to precision loss.
+         Current function value: 9746.091166
+         Iterations: 0
+         Function evaluations: 32
+         Gradient evaluations: 20
+         1308155436 function calls in 579.534 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000  579.534  579.534 <string>:1(<module>)
+  5453292    2.294    0.000  240.637    0.000 MEMMModel.py:148(calcFeatureVecWord)
+212678388   98.688    0.000  198.289    0.000 MEMMModel.py:149(<lambda>)
+        1    0.000    0.000    0.000    0.000 MEMMModel.py:159(makeL)
+       32    6.102    0.191  265.157    8.286 MEMMModel.py:160(L)
+     1280    0.001    0.000    0.001    0.000 MEMMModel.py:164(<genexpr>)
+     1280    0.000    0.000    0.001    0.000 MEMMModel.py:187(<genexpr>)
+        1    0.000    0.000    0.000    0.000 MEMMModel.py:194(makeGradientL)
+       20   93.998    4.700  314.374   15.719 MEMMModel.py:195(gradientL)
+      780    0.000    0.000    0.000    0.000 MEMMModel.py:225(<lambda>)
+  5539340    7.453    0.000  181.081    0.000 MEMMModel.py:231(product)
+        1    0.000    0.000  579.534  579.534 MEMMModel.py:234(trainModel)
+        1    0.000    0.000    0.000    0.000 _methods.py:15(_amax)
+294477768   41.595    0.000   41.595    0.000 feature.py:30(<lambda>)
+294477768   70.413    0.000  112.008    0.000 feature.py:33(val)
+        1    0.000    0.000    0.000    0.000 fromnumeric.py:2048(amax)
+        1    0.000    0.000  456.927  456.927 linesearch.py:101(scalar_search_wolfe1)
+        1    0.000    0.000   99.409   99.409 linesearch.py:187(line_search_wolfe2)
+       12    0.000    0.000   99.408    8.284 linesearch.py:237(phi)
+        1    0.000    0.000   99.409   99.409 linesearch.py:275(scalar_search_wolfe2)
+        1    0.000    0.000  456.927  456.927 linesearch.py:29(line_search_wolfe1)
+       10    0.000    0.000    0.001    0.000 linesearch.py:397(_cubicmin)
+        1    0.000    0.000    0.000    0.000 linesearch.py:431(_quadmin)
+        1    0.000    0.000   91.215   91.215 linesearch.py:452(_zoom)
+       19    0.000    0.000  157.736    8.302 linesearch.py:80(phi)
+       19    0.000    0.000  299.191   15.747 linesearch.py:84(derphi)
+       22    0.000    0.000    0.000    0.000 numeric.py:2320(seterr)
+       22    0.000    0.000    0.000    0.000 numeric.py:2416(geterr)
+       11    0.000    0.000    0.000    0.000 numeric.py:2701(__init__)
+       11    0.000    0.000    0.000    0.000 numeric.py:2705(__enter__)
+       11    0.000    0.000    0.000    0.000 numeric.py:2710(__exit__)
+       11    0.000    0.000    0.000    0.000 numeric.py:392(asarray)
+        1    0.000    0.000    0.000    0.000 optimize.py:126(_check_unknown_options)
+        1    0.000    0.000    0.000    0.000 optimize.py:144(vecnorm)
+        2    0.000    0.000    0.000    0.000 optimize.py:274(wrap_function)
+       52    0.000    0.000  579.530   11.145 optimize.py:279(function_wrapper)
+        1    0.000    0.000  556.336  556.336 optimize.py:670(_line_search_wolfe12)
+        1    0.000    0.000  579.534  579.534 optimize.py:698(fmin_bfgs)
+        1    0.000    0.000  579.534  579.534 optimize.py:792(_minimize_bfgs)
+294477768   26.636    0.000   26.636    0.000 sentence.py:11(word)
+174505344   17.031    0.000   17.031    0.000 sentence.py:8(tag)
+        1    0.000    0.000    0.000    0.000 twodim_base.py:170(eye)
+        2    0.000    0.000    0.000    0.000 {isinstance}
+  2204983    0.137    0.000    0.137    0.000 {len}
+ 10992652  192.183    0.000  390.472    0.000 {map}
+  5453292    0.698    0.000    0.698    0.000 {math.exp}
+    86048    0.018    0.000    0.018    0.000 {math.log}
+     1248    0.000    0.000    0.000    0.000 {math.pow}
+       32    0.000    0.000    0.000    0.000 {math.sqrt}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+       11    0.000    0.000    0.000    0.000 {method 'flatten' of 'numpy.ndarray' objects}
+       11    0.000    0.000    0.000    0.000 {method 'pop' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+       32    0.001    0.000    0.001    0.000 {numpy.core._dotblas.dot}
+       31    0.000    0.000    0.000    0.000 {numpy.core.multiarray.array}
+       10    0.000    0.000    0.000    0.000 {numpy.core.multiarray.empty}
+        3    0.000    0.000    0.000    0.000 {numpy.core.multiarray.zeros}
+       44    0.000    0.000    0.000    0.000 {numpy.core.umath.geterrobj}
+       22    0.000    0.000    0.000    0.000 {numpy.core.umath.seterrobj}
+        5    0.000    0.000    0.000    0.000 {print}
+  2210180    0.758    0.000    0.758    0.000 {range}
+  5593184   21.523    0.000   21.525    0.000 {sum}
+      364    0.000    0.000    0.000    0.000 {time.clock}
+
+
+[ 0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1
+  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1
+  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1  0.1]
