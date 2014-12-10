@@ -1,4 +1,4 @@
-- save + load model
+- save + load model - DONE
 - implement viterbi
 - implement features:
 	- basic    = word + tag, 		  maybe word + tag + prevTag

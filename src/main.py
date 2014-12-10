@@ -9,8 +9,8 @@ wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
 lamda = 0.5;
 featureLevel = 1; # basic
-numSentences = 1000;
-basicFeaturesMinWordCount = 5;
+numSentences = 5;
+basicFeaturesMinWordCount = 2;
 verbose = True
 
 print "initializing..."
@@ -26,6 +26,12 @@ t1 = time.clock()
 model.trainModel()
 t2 = time.clock()
 print "time to train: ", t2 - t1
-#model.trainModel();
 print model.v
+model.summarize();
+model.save('tryModel.pkl')
+model2 = MEMMModel.MEMMModel(verbose,basicFeaturesMinWordCount);
+model2.load('tryModel.pkl')
+print model2.v
+model2.summarize()
+
 winsound.PlaySound("../yofi_sehel.wav",winsound.SND_FILENAME)

@@ -7,6 +7,7 @@ import scipy
 import numpy
 import feature
 import time
+import cPickle as pickle
 
 class MEMMModel:
     
@@ -55,7 +56,50 @@ class MEMMModel:
         self.lamda = 0;
         self.allWordsFeatureVecs = [];
         self.v = 0;
+    
+    def saveFeaturesRaw(self):
+        self.rawFeatures = [];
+        for feature in self.featureSet:
+            self.rawFeatures.append(feature.toRawObj());
+        self.featureSet = [];
+    
+    def save(self,fileName):
+        self.saveFeaturesRaw();
+        with open(fileName, 'wb') as output:
+            pickler = pickle.Pickler(output, -1)
+            pickler.dump(self)
+    
+    def loadFeaturesFromERaw(self):
+        self.featureSet = [];
+        for rawFeature in self.rawFeatures:
+            if rawFeature['type'] == 'unigramWordTagFeature':
+                f = feature.unigramWordTagFeature(rawFeature['word'],rawFeature['tag'],rawFeature['name'])
+                self.featureSet.append(f)
+                continue
+            if rawFeature['type'] == 'morphologicalFeature':
+                f = feature.morphologicalFeature(rawFeature['subStr'],rawFeature['prefixOrSuffix'],rawFeature['name'])
+                self.featureSet.append(f)
+                continue
+            raise 'unknown feature type'
+        self.rawFeatures = None
+                
+    
+    def load(self, filename):
+        with open(filename, 'rb') as inputFile:
+            model = pickle.load(inputFile)
+            self.dictionary = model.dictionary;
+            self.rawFeatures = model.rawFeatures;
+            self.featureNum = model.featureNum;
+            self.allSentences = model.allSentences;
+            self.sentenceNum = model.sentenceNum;
+            self.tagSet = model.tagSet;
+            self.lamda = model.lamda;
+            self.allWordsFeatureVecs = model.allWordsFeatureVecs;
+            self.v = model.v;
+            self.basicFeaturesMinWordCount = model.basicFeaturesMinWordCount
         
+        self.loadFeaturesFromERaw()
+    
     def readGoldenFile(self,wordfile, tagfile, numSentences):
         wf = open(wordfile,'rt');
         tf = open(tagfile,'rt');
@@ -165,13 +209,14 @@ class MEMMModel:
             print "calculating L..."
             t1 = time.clock();
             v = args[0];
+            printStep = int(self.sentenceNum/5);
             print "v norm is ", math.sqrt(sum(v_i * v_i for v_i in v));
             val = 0;
             i = 0;
             s = 0;
             for sentence in self.allSentences:
                 for index in range(0,sentence.len):
-                    val = val + numpy.dot(v, self.allWordsFeatureVecs[i]);
+                    val = val + numpy.inner(v, self.allWordsFeatureVecs[i]);
                     # calculate the inner sum of the second term
                     innerSum = 0;
                     word = sentence.word(index);
@@ -179,8 +224,7 @@ class MEMMModel:
                     prevPrevTag = sentence.tag(index - 2)
                     for tag in self.tagSet:
                         featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag)
-                        exponent = numpy.dot(featureVec, v);
-                        # print "exponent is: ", exponent
+                        exponent = numpy.inner(featureVec, v);
                         try:
                             innerSum += math.exp(exponent);
                         except OverflowError:
@@ -189,7 +233,7 @@ class MEMMModel:
                     val = val - math.log(innerSum)
                     i = i + 1;
                 s = s + 1;
-                if self.verbose and ((s % 20) == 1):
+                if self.verbose and ((s % printStep) == 1):
                     print "\ts =",s,"out of",self.sentenceNum, "sentences, average iter time =",(time.clock() - t1)/s;
             sqNormV = sum(math.pow(v_k, 2) for v_k in v);
             val = val - ((self.lamda / 2) * sqNormV)
@@ -205,7 +249,7 @@ class MEMMModel:
             t1 = time.clock();
             v = args[0]
             val = [0] * self.featureNum;
-            
+            printStep = int(self.sentenceNum/5);
             i = 0;
             s = 0;
             for sentence in self.allSentences:
@@ -217,7 +261,7 @@ class MEMMModel:
                     allFeatureVecsByTags = {};
                     for tag in self.tagSet:
                         featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag);
-                        power = numpy.dot(featureVec, v);
+                        power = numpy.inner(featureVec, v);
                         allFeatureVecsByTags[tag] = featureVec;
                         P[tag] = math.exp(power);
                     sumP = sum(P.values());
@@ -234,7 +278,7 @@ class MEMMModel:
 
                     i = i + 1;
                 s = s + 1;
-                if self.verbose and ((s % 20) == 1):
+                if self.verbose and ((s % printStep) == 1):
                     print "\ts =",s,"out of",self.sentenceNum, "sentences, average iter time =",(time.clock() - t1)/s;
             newVal = map(lambda x: -1 * x, val); # -1 as we want to maximize it and fmin_bfgs only computes min
             t2 = time.clock();
@@ -252,5 +296,5 @@ class MEMMModel:
         except OverflowError:
             print "math overflow error!"
             return 
-        self.v = vopt;
+        self.v = vopt[0];
     

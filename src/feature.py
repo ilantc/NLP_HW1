@@ -5,6 +5,8 @@ class feature:
         return;
     def val(self,word,tag,prevTag,prevPrevTag):
         return 0;
+    def toRawObj(self):
+        return
 
 class morphologicalFeature(feature):
     
@@ -16,9 +18,15 @@ class morphologicalFeature(feature):
             regex = regex + "$";
         self.f = lambda (word): re.search(regex, word)
         self.name = name;
+        self.subStr = subStr;
+        self.prefixOrSuffix = prefixOrSuffix
     
     def val(self,word,tag,prevTag,prevPrevTag):
         return 1 if self.f(word) else 0;
+    
+    def toRawObj(self):
+        rawOBj = {'type':'morphologicalFeature', 'subStr': self.subStr, 'prefixOrSuffix' : self.prefixOrSuffix, 'name' : self.name};
+        return rawOBj
     
     
 class unigramWordTagFeature(feature):
@@ -32,3 +40,7 @@ class unigramWordTagFeature(feature):
     
     def val(self,word,tag,prevTag,prevPrevTag):
         return 1 if self.f((word,tag)) else 0;
+    
+    def toRawObj(self):
+        rawOBj = {'type':'unigramWordTagFeature', 'name' : self.name, 'tag' : self.tag, 'word' : self.word}
+        return rawOBj
