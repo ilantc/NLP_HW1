@@ -5,3 +5,4 @@
 	- medium   = morphological + tag, maybe morph + tag + prev tag
 	- advanced = ?? 
 - implement backoff scheme
+- add offset for input files ( to read the "second" batch of 5k words ) 
