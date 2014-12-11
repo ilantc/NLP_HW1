@@ -37,10 +37,41 @@ class unigramWordTagFeature(feature):
         self.word = word;
         self.f = lambda (_word,_tag): (_word == self.word) and (_tag == self.tag)  
         
-    
     def val(self,word,tag,prevTag,prevPrevTag):
         return 1 if self.f((word,tag)) else 0;
     
     def toRawObj(self):
         rawOBj = {'type':'unigramWordTagFeature', 'name' : self.name, 'tag' : self.tag, 'word' : self.word}
+        return rawOBj
+
+
+class unigramWordTagFeature2(feature):
+    
+    def __init__(self,word,tag,prevTag,name):
+        self.name = name;
+        self.tag = tag;
+        self.prevTag = prevTag;
+        self.word = word;
+        self.f = lambda (_word,_tag,_prevTag): (_word == self.word) and (_tag == self.tag) and (_prevTag == self.prevTag)
+        
+    def val(self,word,tag,prevTag,prevPrevTag):
+        return 1 if self.f((word,tag,prevTag)) else 0;
+    
+    def toRawObj(self):
+        rawOBj = {'type':'unigramWordTagFeature', 'name' : self.name, 'tag' : self.tag, 'word' : self.word, 'prevTag': self.prevTag}
+        return rawOBj
+
+class tagBigramFeature(feature):
+    
+    def __init__(self,tag,prevTag,name):
+        self.name = name;
+        self.tag = tag;
+        self.prevTag = prevTag;
+        self.f = lambda (_tag, _prevTag): (_tag== self.tag) and (_prevTag == self.prevTag)  
+        
+    def val(self,word,tag,prevTag,prevPrevTag):
+        return 1 if self.f((tag,prevTag)) else 0;
+    
+    def toRawObj(self):
+        rawOBj = {'type':'tagBigramFeature', 'name' : self.name, 'tag' : self.tag, 'prevTag' : self.prevTag}
         return rawOBj

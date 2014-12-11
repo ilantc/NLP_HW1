@@ -1,17 +1,13 @@
 import math
-import operator
-import sentence
-from scipy.optimize import fmin_bfgs
 from scipy.optimize import fmin_l_bfgs_b
 import scipy
 import numpy
 import feature
+import sentence
 import time
 import cPickle as pickle
 
 class MEMMModel:
-    
-    startSentenceTag = '*';
     
     def __init__(self,verbose,basicFeaturesMinWordCount):
         # dirctionary is amapping from word to (tag,count) tuple list
@@ -19,6 +15,8 @@ class MEMMModel:
         # an ordered list of functions from (sentence,index,tag_i-1.tag_i-2) to bool
         self.featureSet = [];
         self.featureNum = 0;
+        
+        self.tagToFeatureIndices = {}
         
         self.allSentences = [];
         self.sentenceNum = 0;
@@ -50,6 +48,7 @@ class MEMMModel:
         self.dictionary = {};
         self.featureSet = [];
         self.featureNum = 0;
+        self.tagToFeatureIndices = {}
         self.allSentences = [];
         self.sentenceNum = 0;
         self.tagSet = [];
@@ -69,21 +68,28 @@ class MEMMModel:
             pickler = pickle.Pickler(output, -1)
             pickler.dump(self)
     
-    def loadFeaturesFromERaw(self):
+    def loadFeaturesFromRaw(self):
         self.featureSet = [];
         for rawFeature in self.rawFeatures:
             if rawFeature['type'] == 'unigramWordTagFeature':
                 f = feature.unigramWordTagFeature(rawFeature['word'],rawFeature['tag'],rawFeature['name'])
                 self.featureSet.append(f)
                 continue
+            if rawFeature['type'] == 'unigramWordTagFeature2':
+                f = feature.unigramWordTagFeature2(rawFeature['word'],rawFeature['tag'],rawFeature['prevTag'],rawFeature['name'])
+                self.featureSet.append(f)
+                continue
             if rawFeature['type'] == 'morphologicalFeature':
                 f = feature.morphologicalFeature(rawFeature['subStr'],rawFeature['prefixOrSuffix'],rawFeature['name'])
                 self.featureSet.append(f)
                 continue
+            if rawFeature['type'] == 'tagBigramFeature':
+                f = feature.morphologicalFeature(rawFeature['tag'],rawFeature['prevTag'],rawFeature['name'])
+                self.featureSet.append(f)
+                continue
             raise 'unknown feature type'
         self.rawFeatures = None
-                
-    
+                   
     def load(self, filename):
         with open(filename, 'rb') as inputFile:
             model = pickle.load(inputFile)
@@ -92,13 +98,14 @@ class MEMMModel:
             self.featureNum = model.featureNum;
             self.allSentences = model.allSentences;
             self.sentenceNum = model.sentenceNum;
+            self.tagToFeatureIndices = model.tagToFeatureIndices
             self.tagSet = model.tagSet;
             self.lamda = model.lamda;
             self.allWordsFeatureVecs = model.allWordsFeatureVecs;
             self.v = model.v;
             self.basicFeaturesMinWordCount = model.basicFeaturesMinWordCount
         
-        self.loadFeaturesFromERaw()
+        self.loadFeaturesFromRaw()
     
     def readGoldenFile(self,wordfile, tagfile, numSentences):
         wf = open(wordfile,'rt');
@@ -144,13 +151,21 @@ class MEMMModel:
         # init feature set
         self.initFeatureSet(featureLevel)
         self.allWordsFeatureVecs = self.calcFeatureVecAllWords()
+        # for dbg
+        self.featureNames = map(lambda x: x.name, self.featureSet)
         return;
     
     def initModelFromFile(self, wordfile,tagfile,lamda,featureLevel,numSentences):
         # TODO - add offset
         self.readGoldenFile(wordfile,tagfile,numSentences);
         self.initModelParams(lamda,featureLevel);
-  
+    
+    def addToFeatureMap(self,tag,index):
+        if not self.tagToFeatureIndices.has_key(tag):
+            self.tagToFeatureIndices[tag] = []
+        self.tagToFeatureIndices[tag].append(index)
+        
+        
     def initFeatureSet(self,featureLevel):
         # 1 => 001 => basic 
         # 2 => 010 => medium
@@ -167,25 +182,26 @@ class MEMMModel:
             self.initMediumFeatures();
         if filter(lambda x: x == featureLevel, [4,5,6,7]):
             self.initAdvancedFeatures();
+        self.featureNum = len(self.featureSet)
         t2 = time.clock();
-        print "time to calc features:", t2 - t1;
+        print "time to calc features:", t2 - t1, ", num of features is", self.featureNum;
     
     def initBasicFeatures(self):
         for word in self.dictionary:
-            wordCount = sum(count for (tag,count) in self.dictionary[word]);
-            if (wordCount > self.basicFeaturesMinWordCount):
-                for (tag,count) in self.dictionary[word]:
-                    f = feature.unigramWordTagFeature(word,tag,word + "_" + tag);
+            for (tag,count) in self.dictionary[word]:
+                if (count > self.basicFeaturesMinWordCount):
+                    f = feature.unigramWordTagFeature(word,tag,"1_" + word + "_" + tag);
                     self.featureSet.append(f)
-                    self.featureNum = self.featureNum + 1;
-#         f = feature.unigramWordTagFeature("the","DT","the_dt");
-#         self.featureSet.append(f)
-#         f = feature.unigramWordTagFeature("the","NN","the_nn");
-#         self.featureSet.append(f)
-#         f = feature.unigramWordTagFeature("plays","VBZ","plays_vbz");
-#         self.featureSet.append(f)
-#         self.featureNum = self.featureNum + 3;
-        
+                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
+#                   for prevTag in self.tagSet:
+#                       f = feature.unigramWordTagFeature2(word,tag,prevTag,"2_" + word + "_" + tag + "_" + prevTag)
+#                       self.featureSet.append(f)
+        for tag in self.tagSet:
+            for prevTag in self.tagSet:
+                f = feature.tagBigramFeature(tag,prevTag,"3_" + tag + prevTag)
+                self.featureSet.append(f)
+                self.addToFeatureMap(tag, len(self.featureSet) - 1)
+                
         
     def initMediumFeatures(self):
         return
@@ -193,15 +209,26 @@ class MEMMModel:
     def initAdvancedFeatures(self):
         return
        
-    def calcFeatureVecWord(self,word,tag,prevTag,prevPrevTag):
-        return map(lambda x: x.val(word,tag,prevTag,prevPrevTag),self.featureSet);
+    def calcFeatureVecWord(self,word,tag,prevTag,prevPrevTag,subsetIndices = None):
+        featureSet = self.featureSet
+        if subsetIndices:
+            featureSet = (self.featureSet[i] for i in subsetIndices)
+        return map(lambda x: x.val(word,tag,prevTag,prevPrevTag),featureSet);
     
     def calcFeatureVecAllWords(self):
         allWordsFeatureVecs = [];
+        print "calculating feature vec for all words and golden tags..."
+        s = 0;
+        t1 = time.clock();
+        printStep = int(self.sentenceNum/5);
         for sentence in self.allSentences:
             for index in range(0,sentence.len):
-                wordFeatureVec = self.calcFeatureVecWord(sentence.word(index),sentence.tag(index),sentence.tag(index - 1),sentence.tag(index - 2));
+                tag = sentence.tag(index);
+                wordFeatureVec = self.calcFeatureVecWord(sentence.word(index),tag,sentence.tag(index - 1),sentence.tag(index - 2));
                 allWordsFeatureVecs.append(wordFeatureVec);
+            s = s + 1;
+            if self.verbose and ((s % printStep) == 1):
+                print "\ts =",s,"out of",self.sentenceNum, "sentences, average iter time =",(time.clock() - t1)/s;
         return allWordsFeatureVecs;
                     
     def makeL(self):
@@ -209,22 +236,24 @@ class MEMMModel:
             print "calculating L..."
             t1 = time.clock();
             v = args[0];
-            printStep = int(self.sentenceNum/5);
             print "v norm is ", math.sqrt(sum(v_i * v_i for v_i in v));
             val = 0;
             i = 0;
             s = 0;
+            printStep = int(self.sentenceNum/5);
             for sentence in self.allSentences:
                 for index in range(0,sentence.len):
-                    val = val + numpy.inner(v, self.allWordsFeatureVecs[i]);
+                    val = val + numpy.dot(v, self.allWordsFeatureVecs[i]);
                     # calculate the inner sum of the second term
                     innerSum = 0;
                     word = sentence.word(index);
                     prevTag = sentence.tag(index - 1)
                     prevPrevTag = sentence.tag(index - 2)
+                    #for (tag,_) in self.dictionary[word]:
                     for tag in self.tagSet:
-                        featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag)
-                        exponent = numpy.inner(featureVec, v);
+                        featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToFeatureIndices[tag])
+                        sub_v = [v[j] for j in self.tagToFeatureIndices[tag]]
+                        exponent = numpy.dot(featureVec, sub_v);
                         try:
                             innerSum += math.exp(exponent);
                         except OverflowError:
@@ -260,21 +289,28 @@ class MEMMModel:
                     P = {}
                     allFeatureVecsByTags = {};
                     for tag in self.tagSet:
-                        featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag);
-                        power = numpy.inner(featureVec, v);
+                        featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToFeatureIndices[tag]);
+                        sub_v = [v[j] for j in self.tagToFeatureIndices[tag]]
+                        power = numpy.dot(featureVec, sub_v);
                         allFeatureVecsByTags[tag] = featureVec;
                         P[tag] = math.exp(power);
                     sumP = sum(P.values());
-                    for k in range(0,self.featureNum):
-                        # empirical counts
-                        val[k] = val[k] + self.allWordsFeatureVecs[i][k];
-                        # expected count
-                        expectedCount = 0;
-                        for tag in self.tagSet:
-                            f_k = allFeatureVecsByTags[tag][k]
-                            expectedCount = expectedCount + (f_k * P[tag] / sumP);
-                        val[k] = val[k] - expectedCount;
-                        val[k] = val[k] - (self.lamda*v[k]);
+                    #for k in range(0,self.featureNum):
+                    #for (tag,_) in self.dictionary[word]:
+                    for tag in self.tagSet:
+                        for k in self.tagToFeatureIndices[tag]:
+                            # empirical counts
+                            val[k] = val[k] + self.allWordsFeatureVecs[i][k];
+                            # expected count
+                            expectedCount = 0;
+                            for tag in self.tagSet:
+                                f_k = 0;
+                                if self.tagToFeatureIndices[tag].count(k) > 0:
+                                    featureIndex = self.tagToFeatureIndices[tag].index(k)
+                                    f_k = allFeatureVecsByTags[tag][featureIndex]
+                                expectedCount = expectedCount + (f_k * P[tag] / sumP);
+                            val[k] = val[k] - expectedCount;
+                            val[k] = val[k] - (self.lamda*v[k]);
 
                     i = i + 1;
                 s = s + 1;
