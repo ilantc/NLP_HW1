@@ -9,7 +9,7 @@ wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
 lamda = 0.5;
 featureLevel = 1; # basic
-numSentences = 5000;
+numSentences = 10;
 basicFeaturesMinWordCount = 15;
 verbose = True
 

@@ -9,34 +9,52 @@ import cPickle as pickle
 
 class MEMMModel:
     
-    def __init__(self,verbose,basicFeaturesMinWordCount):
-        # dirctionary is amapping from word to (tag,count) tuple list
+    def __init__(self,verbose,minFeatureCount):
+        # dictionary is a mapping from word to (tag,count) tuple list
         self.dictionary = {};
         # an ordered list of functions from (sentence,index,tag_i-1.tag_i-2) to bool
         self.featureSet = [];
         self.featureNum = 0;
         
+        # mapping from a tag to a list of feature indices that involve this tag
+        # used to save calculations of features that we know will be "0" 
         self.tagToFeatureIndices = {}
         
+        # mapping from tag to tag bigram features
+        self.tagToTagBigramFeatureIndices = {}
+        
+        # list of sentence objects (for training)
         self.allSentences = [];
         self.sentenceNum = 0;
+        
         # all possible tags
         self.tagSet = [];
+        
+        # lamda for calculating L(v) and grad(L(V))
         self.lamda = 0;
+        
+        # feature vector for all words with their golden tags - for saving calculations
         self.allWordsFeatureVecs = [];
+        
+        # flag for printing
         self.verbose = verbose;
-        self.basicFeaturesMinWordCount = basicFeaturesMinWordCount;
+        
+        # minimum number of feature appearance in training data 
+        # if a feature occures less than this number - dont include it in the model
+        self.minFeatureCount = minFeatureCount;
     
     def summarize(self):
+        """ print a summary of the model""" 
         print "MODEL SUMMARY:"
         print   "\tnum sentences             =", self.sentenceNum, \
               "\n\tnum features              =", self.featureNum, \
               "\n\tnum tags                  =", len(self.tagSet), \
               "\n\tlamda                     =", self.lamda, \
               "\n\tnum words                 =", len(self.allWordsFeatureVecs), \
-              "\n\tbasicFeaturesMinWordCount =", self.basicFeaturesMinWordCount
+              "\n\tminFeatureCount =", self.minFeatureCount
     
     def show(self):
+        """ heavy printing - use only for debugging of very small models"""
         print "sentences are:"
         for sentence in self.allSentences:
             print sentence.toString()
@@ -45,10 +63,12 @@ class MEMMModel:
             print f.name
     
     def reset(self):
+        """ not realy needed - but here anyway for the good order of things"""
         self.dictionary = {};
         self.featureSet = [];
         self.featureNum = 0;
         self.tagToFeatureIndices = {}
+        self.tagToTagBigramFeatureIndices = {}
         self.allSentences = [];
         self.sentenceNum = 0;
         self.tagSet = [];
@@ -57,20 +77,24 @@ class MEMMModel:
         self.v = 0;
     
     def saveFeaturesRaw(self):
+        """ save features as raw data, since pickle.dump can't dump functions"""
         self.rawFeatures = [];
         for feature in self.featureSet:
             self.rawFeatures.append(feature.toRawObj());
         self.featureSet = [];
     
     def save(self,fileName):
+        """ save the model to file"""
         self.saveFeaturesRaw();
         with open(fileName, 'wb') as output:
             pickler = pickle.Pickler(output, -1)
             pickler.dump(self)
     
     def loadFeaturesFromRaw(self):
+        """ convert all raw feature objects to actual feature objects when loading a model from file"""
         self.featureSet = [];
         for rawFeature in self.rawFeatures:
+            # unfortunatly there is no switch statement in Python :( 
             if rawFeature['type'] == 'unigramWordTagFeature':
                 f = feature.unigramWordTagFeature(rawFeature['word'],rawFeature['tag'],rawFeature['name'])
                 self.featureSet.append(f)
@@ -91,6 +115,7 @@ class MEMMModel:
         self.rawFeatures = None
                    
     def load(self, filename):
+        """ load a model from file """ 
         with open(filename, 'rb') as inputFile:
             model = pickle.load(inputFile)
             self.dictionary = model.dictionary;
@@ -99,20 +124,23 @@ class MEMMModel:
             self.allSentences = model.allSentences;
             self.sentenceNum = model.sentenceNum;
             self.tagToFeatureIndices = model.tagToFeatureIndices
+            self.tagToTagBigramFeatureIndices = model.tagToTagBigramFeatureIndices
             self.tagSet = model.tagSet;
             self.lamda = model.lamda;
             self.allWordsFeatureVecs = model.allWordsFeatureVecs;
             self.v = model.v;
-            self.basicFeaturesMinWordCount = model.basicFeaturesMinWordCount
+            self.minFeatureCount = model.minFeatureCount
         
         self.loadFeaturesFromRaw()
     
     def readGoldenFile(self,wordfile, tagfile, numSentences):
+        """ read training file """ 
         wf = open(wordfile,'rt');
         tf = open(tagfile,'rt');
         allSentences = [];
         wlines = wf.readlines()
         tlines = tf.readlines()
+        # build and save sentence objects
         for i in range(0,numSentences):
             # new sentence
             words = wlines[i].split();
@@ -121,52 +149,74 @@ class MEMMModel:
             allSentences.append(s);
         wf.close();
         tf.close();
+        # save data
         self.allSentences = allSentences;
         self.sentenceNum = len(allSentences);
     
     def initModelParams(self,lamda,featureLevel):
-        # init dictionary (map words to (tag,count) tuple list
-        # i.e. dictionary[moshe] -> [(VB,1),(NN,2)]
+        """ init dictionary (map words to (tag,count) tuple list
+            i.e. dictionary[moshe] -> [(VB,1),(NN,2)] """
+        allTagBigrams = {}
         for sentence in self.allSentences:
             for i in range(0,sentence.len):
                 word = sentence.word(i);
                 tag = sentence.tag(i);
+                prevTag = sentence.tag(i - 1)
+                if (allTagBigrams.has_key((tag,prevTag))):
+                    allTagBigrams[(tag,prevTag)] = allTagBigrams[(tag,prevTag)] + 1
+                else:
+                    allTagBigrams[(tag,prevTag)] = 1; 
                 foundTag = False;
                 if self.dictionary.has_key(word):
+                    # if this word already exists in the dictionary
                     for j in range(0,len(self.dictionary[word])):
-                        (tag2,count) = self.dictionary[word][j] 
+                        (tag2,count) = self.dictionary[word][j]
+                        # if this tag was already seen with this word
                         if tag2 == tag:
                             self.dictionary[word][j] = (tag, count + 1)
                             foundTag = True
-                            break
+                            break # break inner loop for searching a match for tag
                     if not foundTag:
+                        # didn't find the tag - create a new entry for this word with this tag
                         self.dictionary[word].append((tag,1))
                 else:
+                    # didn't find word - create a new entry for it
                     self.dictionary[word] = [(tag,1)];
                 if not foundTag:
+                    # add tag to tagSet if needed
                     if self.tagSet.count(tag) == 0:
                         self.tagSet.append(tag)
-        # TODO - cleanup tagset?
+        # TODO - cleanup tagset? => consider removing special tags such as -LRB- (which stands for the word "("
         self.lamda = lamda 
         # init feature set
-        self.initFeatureSet(featureLevel)
+        self.initFeatureSet(featureLevel,allTagBigrams)
         self.allWordsFeatureVecs = self.calcFeatureVecAllWords()
-        # for dbg
+        
+        # for debug
         self.featureNames = map(lambda x: x.name, self.featureSet)
         return;
     
     def initModelFromFile(self, wordfile,tagfile,lamda,featureLevel,numSentences):
-        # TODO - add offset
+        """ init the model""" 
+        # TODO - add offset (i.e. choose 5000 sentences starting from sentence 5001)
         self.readGoldenFile(wordfile,tagfile,numSentences);
         self.initModelParams(lamda,featureLevel);
     
     def addToFeatureMap(self,tag,index):
+        """ add index to tag -> feature indices mapping"""
         if not self.tagToFeatureIndices.has_key(tag):
             self.tagToFeatureIndices[tag] = []
         self.tagToFeatureIndices[tag].append(index)
+    
+    def addToTagBigramFeatureMap(self, tag,index):
+        """ add index to tag -> tag bigram indices 
+            this is needed as for calculating P we need to calculate these features as well"""
+        if not self.tagToTagBigramFeatureIndices.has_key(tag):
+            self.tagToTagBigramFeatureIndices[tag] = []
+        self.tagToTagBigramFeatureIndices[tag].append(index)
         
-        
-    def initFeatureSet(self,featureLevel):
+    def initFeatureSet(self,featureLevel,allTagBigrams):
+        """calculate all features accordign to feature level"""
         # 1 => 001 => basic 
         # 2 => 010 => medium
         # 3 => 011 => medium + basic
@@ -177,7 +227,7 @@ class MEMMModel:
         print "calculating features..."
         t1 = time.clock();
         if filter(lambda x: x == featureLevel, [1,3,5,7]):
-            self.initBasicFeatures();
+            self.initBasicFeatures(allTagBigrams);
         if filter(lambda x: x == featureLevel, [2,3,6,7]):
             self.initMediumFeatures();
         if filter(lambda x: x == featureLevel, [4,5,6,7]):
@@ -186,21 +236,22 @@ class MEMMModel:
         t2 = time.clock();
         print "time to calc features:", t2 - t1, ", num of features is", self.featureNum;
     
-    def initBasicFeatures(self):
+    def initBasicFeatures(self,allTagBigrams):
         for word in self.dictionary:
             for (tag,count) in self.dictionary[word]:
-                if (count > self.basicFeaturesMinWordCount):
+                if (count > self.minFeatureCount):
                     f = feature.unigramWordTagFeature(word,tag,"1_" + word + "_" + tag);
                     self.featureSet.append(f)
                     self.addToFeatureMap(tag, len(self.featureSet) - 1)
 #                   for prevTag in self.tagSet:
 #                       f = feature.unigramWordTagFeature2(word,tag,prevTag,"2_" + word + "_" + tag + "_" + prevTag)
 #                       self.featureSet.append(f)
-        for tag in self.tagSet:
-            for prevTag in self.tagSet:
+        for (tag,prevTag) in allTagBigrams:
+            if allTagBigrams[(tag,prevTag)] > self.minFeatureCount:
                 f = feature.tagBigramFeature(tag,prevTag,"3_" + tag + prevTag)
                 self.featureSet.append(f)
                 self.addToFeatureMap(tag, len(self.featureSet) - 1)
+                self.addToTagBigramFeatureMap(tag,len(self.featureSet) - 1)
                 
         
     def initMediumFeatures(self):
@@ -216,6 +267,8 @@ class MEMMModel:
         return map(lambda x: x.val(word,tag,prevTag,prevPrevTag),featureSet);
     
     def calcFeatureVecAllWords(self):
+        """ claculate the feature vector for all words with thier golden tags
+            here for saving calculations """
         allWordsFeatureVecs = [];
         print "calculating feature vec for all words and golden tags..."
         s = 0;
@@ -250,6 +303,7 @@ class MEMMModel:
                     prevTag = sentence.tag(index - 1)
                     prevPrevTag = sentence.tag(index - 2)
                     #for (tag,_) in self.dictionary[word]:
+                    wordTags = [tag for (tag,_) in self.dictionary[word]]
                     for tag in self.tagSet:
                         featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToFeatureIndices[tag])
                         sub_v = [v[j] for j in self.tagToFeatureIndices[tag]]
