@@ -31,10 +31,11 @@ class morphologicalFeature(feature):
     
 class unigramWordTagFeature(feature):
     
-    def __init__(self,word,tag,name):
+    def __init__(self,word,tag,count,name):
         self.name = name;
         self.tag = tag;
         self.word = word;
+        self.count = count
         self.f = lambda (_word,_tag): (_word == self.word) and (_tag == self.tag)  
         
     def val(self,word,tag,prevTag,prevPrevTag):
@@ -47,11 +48,12 @@ class unigramWordTagFeature(feature):
 
 class unigramWordTagFeature2(feature):
     
-    def __init__(self,word,tag,prevTag,name):
-        self.name = name;
-        self.tag = tag;
-        self.prevTag = prevTag;
-        self.word = word;
+    def __init__(self,word,tag,prevTag,count,name):
+        self.name = name
+        self.tag = tag
+        self.prevTag = prevTag
+        self.word = word
+        self.count = count
         self.f = lambda (_word,_tag,_prevTag): (_word == self.word) and (_tag == self.tag) and (_prevTag == self.prevTag)
         
     def val(self,word,tag,prevTag,prevPrevTag):
@@ -63,10 +65,11 @@ class unigramWordTagFeature2(feature):
 
 class tagBigramFeature(feature):
     
-    def __init__(self,tag,prevTag,name):
+    def __init__(self,tag,prevTag,count,name):
         self.name = name;
         self.tag = tag;
         self.prevTag = prevTag;
+        self.count = count
         self.f = lambda (_tag, _prevTag): (_tag== self.tag) and (_prevTag == self.prevTag)  
         
     def val(self,word,tag,prevTag,prevPrevTag):
