@@ -252,6 +252,11 @@ class MEMMModel:
                 self.featureSet.append(f)
                 self.addToFeatureMap(tag, len(self.featureSet) - 1)
                 self.addToTagBigramFeatureMap(tag,len(self.featureSet) - 1)
+        for tag in self.tagSet:
+            if not self.tagToTagBigramFeatureIndices.has_key(tag):
+                self.tagToTagBigramFeatureIndices[tag] = []
+            if not self.tagToFeatureIndices.has_key(tag):
+                self.tagToFeatureIndices[tag] = []
                 
         
     def initMediumFeatures(self):
@@ -262,7 +267,7 @@ class MEMMModel:
        
     def calcFeatureVecWord(self,word,tag,prevTag,prevPrevTag,subsetIndices = None):
         featureSet = self.featureSet
-        if subsetIndices:
+        if subsetIndices or (subsetIndices == []):
             featureSet = (self.featureSet[i] for i in subsetIndices)
         return map(lambda x: x.val(word,tag,prevTag,prevPrevTag),featureSet);
     
@@ -305,9 +310,16 @@ class MEMMModel:
                     #for (tag,_) in self.dictionary[word]:
                     wordTags = [tag for (tag,_) in self.dictionary[word]]
                     for tag in self.tagSet:
-                        featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToFeatureIndices[tag])
-                        sub_v = [v[j] for j in self.tagToFeatureIndices[tag]]
-                        exponent = numpy.dot(featureVec, sub_v);
+                        exponent = 0;
+                        if tag in wordTags:
+                            featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToFeatureIndices[tag])
+                            sub_v = [v[j] for j in self.tagToFeatureIndices[tag]]
+                            exponent = numpy.dot(featureVec, sub_v);
+                        else:
+                            # only calculate tag bigram and tag trigrams
+                            featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToTagBigramFeatureIndices[tag])
+                            sub_v = [v[j] for j in self.tagToTagBigramFeatureIndices[tag]]
+                            exponent = numpy.dot(featureVec, sub_v);
                         try:
                             innerSum += math.exp(exponent);
                         except OverflowError:
@@ -342,12 +354,20 @@ class MEMMModel:
                     prevPrevTag = sentence.tag(index - 2)
                     P = {}
                     allFeatureVecsByTags = {};
+                    wordTags = [tag for (tag,_) in self.dictionary[word]]
                     for tag in self.tagSet:
-                        featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToFeatureIndices[tag]);
-                        sub_v = [v[j] for j in self.tagToFeatureIndices[tag]]
-                        power = numpy.dot(featureVec, sub_v);
-                        allFeatureVecsByTags[tag] = featureVec;
-                        P[tag] = math.exp(power);
+                        if tag in wordTags:
+                            featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToFeatureIndices[tag]);
+                            sub_v = [v[j] for j in self.tagToFeatureIndices[tag]]
+                            power = numpy.dot(featureVec, sub_v);
+                            allFeatureVecsByTags[tag] = featureVec;
+                            P[tag] = math.exp(power);
+                        else:
+                            featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToTagBigramFeatureIndices[tag]);
+                            sub_v = [v[j] for j in self.tagToTagBigramFeatureIndices[tag]]
+                            power = numpy.dot(featureVec, sub_v);
+                            allFeatureVecsByTags[tag] = featureVec;
+                            P[tag] = math.exp(power);
                     sumP = sum(P.values());
                     #for k in range(0,self.featureNum):
                     #for (tag,_) in self.dictionary[word]:
@@ -359,13 +379,17 @@ class MEMMModel:
                             expectedCount = 0;
                             for tag in self.tagSet:
                                 f_k = 0;
-                                if self.tagToFeatureIndices[tag].count(k) > 0:
-                                    featureIndex = self.tagToFeatureIndices[tag].index(k)
-                                    f_k = allFeatureVecsByTags[tag][featureIndex]
+                                if tag in wordTags:
+                                    if k in self.tagToFeatureIndices[tag]:
+                                        featureIndex = self.tagToFeatureIndices[tag].index(k)
+                                        f_k = allFeatureVecsByTags[tag][featureIndex]
+                                else:
+                                    if k in self.tagToTagBigramFeatureIndices[tag]:
+                                        featureIndex = self.tagToTagBigramFeatureIndices[tag].index(k)
+                                        f_k = allFeatureVecsByTags[tag][featureIndex]
                                 expectedCount = expectedCount + (f_k * P[tag] / sumP);
                             val[k] = val[k] - expectedCount;
                             val[k] = val[k] - (self.lamda*v[k]);
-
                     i = i + 1;
                 s = s + 1;
                 if self.verbose and ((s % printStep) == 1):
