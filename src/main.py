@@ -41,14 +41,14 @@ def calcStat(wordDict,outfileSuff,outfilePref):
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
 lamda = 0.5;
-featureLevel = 1; # basic
-# featureLevel = 2; # med
+#featureLevel = 1; # basic
+featureLevel = 2; # med
 #featureLevel = 4; # advanced
 numSentences = 5000;
 basicFeaturesMinWordCount = 10;
-medFeaturesUniCount = 1000
-medFeaturesBiCount = 1000
-medFeaturesTriCount = 1000
+medFeaturesUniCount = 800
+medFeaturesBiCount = 800
+medFeaturesTriCount = 400
 verbose = True
 
 print "initializing..."

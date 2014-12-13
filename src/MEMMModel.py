@@ -9,7 +9,7 @@ import cPickle as pickle
 
 class MEMMModel:
     
-    def __init__(self,verbose,basicFeatureMinCount,medFeatureUniGramMinCount,medFeatureTriGramMinCount,medFeatureBiGramMinCount):
+    def __init__(self,verbose,basicFeatureMinCount,medFeatureUniGramMinCount,medFeatureBiGramMinCount,medFeatureTriGramMinCount):
         # dictionary is a mapping from word to (tag,count) tuple list
         self.dictionary = {}
         # an ordered list of functions from (sentence,index,tag_i-1.tag_i-2) to bool
