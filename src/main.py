@@ -50,7 +50,7 @@ print "initializing..."
 t1 = time.clock()
 model = MEMMModel.MEMMModel(verbose,basicFeaturesMinWordCount);
 model.initModelFromFile(wordfile,tagfile,lamda,featureLevel,numSentences)
-calcStat(model.dictionary,"train_suff_stats.txt","train_pref_stats.txt")
+#calcStat(model.dictionary,"train_suff_stats.txt","train_pref_stats.txt")
 t2 = time.clock();
 print "time to initialize: ", t2 - t1
 model.summarize();
@@ -63,4 +63,4 @@ model.save("basicModel_5k.pkl")
 model.summarize();
 
 
-winsound.PlaySound("../yofi_sehel.wav",winsound.SND_FILENAME)
+#winsound.PlaySound("../yofi_sehel.wav",winsound.SND_FILENAME)
