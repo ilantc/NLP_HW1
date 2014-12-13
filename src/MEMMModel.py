@@ -218,6 +218,8 @@ class MEMMModel:
         # init feature set
         self.initFeatureSet(featureLevel,allTagUnigrams,allTagBigrams,allTagTrigrams)
         self.allWordsFeatureVecs = self.calcFeatureVecAllWords()
+        self.calcCounts()
+        self.empiricalCounts = [f.count for f in self.featureSet]
         
         # for debug
         self.featureNames = map(lambda x: x.name, self.featureSet)
@@ -261,7 +263,6 @@ class MEMMModel:
             self.initAdvancedFeatures()
         self.featureNum = len(self.featureSet)
         t2 = time.clock()
-        self.empiricalCounts = [f.count for f in self.featureSet];
         print "time to calc features:", t2 - t1, ", num of features is", self.featureNum
     
     def initBasicFeatures(self,allTagUnigrams,allTagBigrams,allTagTrigrams):
@@ -336,12 +337,16 @@ class MEMMModel:
                 self.tagToTagNgramFeatureIndices[tag] = []
             if not self.tagToFeatureIndices.has_key(tag):
                 self.tagToFeatureIndices[tag] = []
-        self.calcEmpiricalCounts()
     
-    def calcEmpiricalCounts(self):
-        for sentence in self.sentenceNum:
-            for i in range(0,sentence.len):
-                print ""
+    def calcCounts(self):
+        np_allFeatureVecs = numpy.array(self.allWordsFeatureVecs)
+        for k in range(0,len(self.featureSet)):
+            if not (hasattr(self.featureSet[k],'count')):
+                count = numpy.sum(np_allFeatureVecs.take(k,axis=1))
+#                 arr = [self.allWordsFeatureVecs[i][k] for i in range[0,len(self.allWordsFeatureVecs)]]
+#                 count = numpy.sum(arr)
+                self.featureSet[k].count = count 
+            
             
     def initAdvancedFeatures(self):
         return

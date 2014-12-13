@@ -23,7 +23,7 @@ class morphologicalFeature(feature):
         self.prefixOrSuffix = prefixOrSuffix
     
     def val(self,word,tag,prevTag,prevPrevTag):
-        return 1 if self.f(word,tag) else 0;
+        return 1 if self.f((word,tag)) else 0;
     
     def toRawObj(self):
         rawOBj = {'type':'morphologicalFeature', 'subStr': self.subStr, 'prefixOrSuffix' : self.prefixOrSuffix, 'name' : self.name, 'tag' : self.tag};
@@ -45,7 +45,7 @@ class morphologicalBigramFeature(feature):
         self.prefixOrSuffix = prefixOrSuffix
     
     def val(self,word,tag,prevTag,prevPrevTag):
-        return 1 if self.f(word,tag,prevTag) else 0;
+        return 1 if self.f((word,tag,prevTag)) else 0;
     
     def toRawObj(self):
         rawOBj = {'type':'morphologicalBigramFeature', 'subStr': self.subStr, 'prefixOrSuffix' : self.prefixOrSuffix, 'name' : self.name, \
@@ -69,7 +69,7 @@ class morphologicalTrigramFeature(feature):
         self.prefixOrSuffix = prefixOrSuffix
     
     def val(self,word,tag,prevTag,prevPrevTag):
-        return 1 if self.f(word,tag,prevTag,prevPrevTag) else 0;
+        return 1 if self.f((word,tag,prevTag,prevPrevTag)) else 0;
     
     def toRawObj(self):
         rawOBj = {'type':'morphologicalTrigramFeature', 'subStr': self.subStr, 'prefixOrSuffix' : self.prefixOrSuffix, 'name' : self.name, \
