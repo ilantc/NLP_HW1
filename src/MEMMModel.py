@@ -21,7 +21,7 @@ class MEMMModel:
         self.tagToFeatureIndices = {}
         
         # mapping from tag to tag bigram features
-        self.tagToTagBigramFeatureIndices = {}
+        self.tagToTagNgramFeatureIndices = {}
         
         # list of sentence objects (for training)
         self.allSentences = []
@@ -68,7 +68,7 @@ class MEMMModel:
         self.featureSet = []
         self.featureNum = 0
         self.tagToFeatureIndices = {}
-        self.tagToTagBigramFeatureIndices = {}
+        self.tagToTagNgramFeatureIndices = {}
         self.allSentences = []
         self.sentenceNum = 0
         self.tagSet = []
@@ -99,16 +99,24 @@ class MEMMModel:
                 f = feature.unigramWordTagFeature(rawFeature['word'], rawFeature['tag'], rawFeature['name'])
                 self.featureSet.append(f)
                 continue
-            if rawFeature['type'] == 'unigramWordTagFeature2':
-                f = feature.unigramWordTagFeature2(rawFeature['word'], rawFeature['tag'], rawFeature['prevTag'], rawFeature['name'])
+            if rawFeature['type'] == 'bigramWordTagFeature':
+                f = feature.bigramWordTagFeature(rawFeature['word'], rawFeature['tag'], rawFeature['prevTag'], rawFeature['name'])
                 self.featureSet.append(f)
                 continue
             if rawFeature['type'] == 'morphologicalFeature':
                 f = feature.morphologicalFeature(rawFeature['subStr'], rawFeature['prefixOrSuffix'], rawFeature['name'])
                 self.featureSet.append(f)
                 continue
+            if rawFeature['type'] == 'tagUnigramFeature':
+                f = feature.morphologicalFeature(rawFeature['tag'], rawFeature['name'])
+                self.featureSet.append(f)
+                continue
             if rawFeature['type'] == 'tagBigramFeature':
                 f = feature.morphologicalFeature(rawFeature['tag'], rawFeature['prevTag'], rawFeature['name'])
+                self.featureSet.append(f)
+                continue
+            if rawFeature['type'] == 'tagTrigramFeature':
+                f = feature.morphologicalFeature(rawFeature['tag'], rawFeature['prevTag'], rawFeature['prevPrevTag'], rawFeature['name'])
                 self.featureSet.append(f)
                 continue
             raise 'unknown feature type'
@@ -124,7 +132,7 @@ class MEMMModel:
             self.allSentences = model.allSentences
             self.sentenceNum = model.sentenceNum
             self.tagToFeatureIndices = model.tagToFeatureIndices
-            self.tagToTagBigramFeatureIndices = model.tagToTagBigramFeatureIndices
+            self.tagToTagNgramFeatureIndices = model.tagToTagNgramFeatureIndices
             self.tagSet = model.tagSet
             self.lamda = model.lamda
             self.allWordsFeatureVecs = model.allWordsFeatureVecs
@@ -156,16 +164,27 @@ class MEMMModel:
     def initModelParams(self,lamda,featureLevel):
         """ init dictionary (map words to (tag,count) tuple list
             i.e. dictionary[moshe] -> [(VB,1),(NN,2)] """
+        allTagUnigrams = {}
         allTagBigrams = {}
+        allTagTrigrams = {}
         for sentence in self.allSentences:
             for i in range(0,sentence.len):
                 word = sentence.word(i)
                 tag = sentence.tag(i)
                 prevTag = sentence.tag(i - 1)
+                prevPrevTag = sentence.tag(i - 2) 
+                if (allTagUnigrams.has_key(tag)):
+                    allTagUnigrams[tag] += 1
+                else:
+                    allTagUnigrams[tag] = 1
                 if (allTagBigrams.has_key((tag,prevTag))):
-                    allTagBigrams[(tag,prevTag)] = allTagBigrams[(tag,prevTag)] + 1
+                    allTagBigrams[(tag,prevTag)] += 1
                 else:
                     allTagBigrams[(tag,prevTag)] = 1
+                if (allTagTrigrams.has_key((tag,prevTag,prevPrevTag))):
+                    allTagTrigrams[(tag,prevTag,prevPrevTag)] += 1
+                else:
+                    allTagTrigrams[(tag,prevTag,prevPrevTag)] = 1
                 foundTag = False
                 if self.dictionary.has_key(word):
                     # if this word already exists in the dictionary
@@ -189,7 +208,7 @@ class MEMMModel:
         # TODO - cleanup tagset? => consider removing special tags such as -LRB- (which stands for the word "("
         self.lamda = lamda 
         # init feature set
-        self.initFeatureSet(featureLevel,allTagBigrams)
+        self.initFeatureSet(featureLevel,allTagUnigrams,allTagBigrams,allTagTrigrams)
         self.allWordsFeatureVecs = self.calcFeatureVecAllWords()
         
         # for debug
@@ -208,14 +227,14 @@ class MEMMModel:
             self.tagToFeatureIndices[tag] = []
         self.tagToFeatureIndices[tag].append(index)
     
-    def addToTagBigramFeatureMap(self, tag,index):
+    def addToTagNgramFeatureMap(self, tag,index):
         """ add index to tag -> tag bigram indices 
             this is needed as for calculating P we need to calculate these features as well"""
-        if not self.tagToTagBigramFeatureIndices.has_key(tag):
-            self.tagToTagBigramFeatureIndices[tag] = []
-        self.tagToTagBigramFeatureIndices[tag].append(index)
+        if not self.tagToTagNgramFeatureIndices.has_key(tag):
+            self.tagToTagNgramFeatureIndices[tag] = []
+        self.tagToTagNgramFeatureIndices[tag].append(index)
         
-    def initFeatureSet(self,featureLevel,allTagBigrams):
+    def initFeatureSet(self,featureLevel,allTagUnigrams,allTagBigrams,allTagTrigrams):
         """calculate all features accordign to feature level"""
         # 1 => 001 => basic 
         # 2 => 010 => medium
@@ -227,7 +246,7 @@ class MEMMModel:
         print "calculating features..."
         t1 = time.clock()
         if filter(lambda x: x == featureLevel, [1,3,5,7]):
-            self.initBasicFeatures(allTagBigrams)
+            self.initBasicFeatures(allTagUnigrams,allTagBigrams,allTagTrigrams)
         if filter(lambda x: x == featureLevel, [2,3,6,7]):
             self.initMediumFeatures()
         if filter(lambda x: x == featureLevel, [4,5,6,7]):
@@ -237,22 +256,34 @@ class MEMMModel:
         self.empiricalCounts = [f.count for f in self.featureSet];
         print "time to calc features:", t2 - t1, ", num of features is", self.featureNum
     
-    def initBasicFeatures(self,allTagBigrams):
+    def initBasicFeatures(self,allTagUnigrams,allTagBigrams,allTagTrigrams):
         for word in self.dictionary:
             for (tag,count) in self.dictionary[word]:
                 if (count > self.minFeatureCount):
                     f = feature.unigramWordTagFeature(word,tag,count,"1_" + word + "_" + tag)
                     self.featureSet.append(f)
                     self.addToFeatureMap(tag, len(self.featureSet) - 1)
-        for (tag,prevTag) in allTagBigrams:
-            if allTagBigrams[(tag,prevTag)] > self.minFeatureCount:
-                f = feature.tagBigramFeature(tag,prevTag,allTagBigrams[(tag,prevTag)],"3_" + tag + prevTag)
+        for tag in allTagUnigrams:
+            if allTagUnigrams[tag] > self.minFeatureCount:
+                f = feature.tagUnigramFeature(tag,allTagUnigrams[tag],"2_" + tag)
                 self.featureSet.append(f)
                 self.addToFeatureMap(tag, len(self.featureSet) - 1)
-                self.addToTagBigramFeatureMap(tag,len(self.featureSet) - 1)
+                self.addToTagNgramFeatureMap(tag,len(self.featureSet) - 1)
+        for (tag,prevTag) in allTagBigrams:
+            if allTagBigrams[(tag,prevTag)] > self.minFeatureCount:
+                f = feature.tagBigramFeature(tag,prevTag,allTagBigrams[(tag,prevTag)],"3_" + tag + "_" + prevTag)
+                self.featureSet.append(f)
+                self.addToFeatureMap(tag, len(self.featureSet) - 1)
+                self.addToTagNgramFeatureMap(tag,len(self.featureSet) - 1)
+        for (tag,prevTag,prevPrevTag) in allTagTrigrams:
+            if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.minFeatureCount:
+                f = feature.tagTrigramFeature(tag,prevTag,prevPrevTag,allTagTrigrams[(tag,prevTag,prevPrevTag)],"4_" + tag + "_" + prevTag + "_" + prevPrevTag)
+                self.featureSet.append(f)
+                self.addToFeatureMap(tag, len(self.featureSet) - 1)
+                self.addToTagNgramFeatureMap(tag,len(self.featureSet) - 1)
         for tag in self.tagSet:
-            if not self.tagToTagBigramFeatureIndices.has_key(tag):
-                self.tagToTagBigramFeatureIndices[tag] = []
+            if not self.tagToTagNgramFeatureIndices.has_key(tag):
+                self.tagToTagNgramFeatureIndices[tag] = []
             if not self.tagToFeatureIndices.has_key(tag):
                 self.tagToFeatureIndices[tag] = []
                 
@@ -280,7 +311,11 @@ class MEMMModel:
         for sentence in self.allSentences:
             for index in range(0,sentence.len):
                 tag = sentence.tag(index)
-                wordFeatureVec = self.calcFeatureVecWord(sentence.word(index),tag,sentence.tag(index - 1),sentence.tag(index - 2))
+                tagIndices = self.tagToFeatureIndices[tag]
+                wordFeatureVec = numpy.zeros(self.featureNum)
+                wordPartialVec = self.calcFeatureVecWord(sentence.word(index),tag,sentence.tag(index - 1),sentence.tag(index - 2),tagIndices)
+                for i in tagIndices:
+                    wordFeatureVec[i] = wordPartialVec[tagIndices.index(i)]
                 allWordsFeatureVecs.append(wordFeatureVec)
             s = s + 1
             if self.verbose and ((s % printStep) == 1):
@@ -315,8 +350,8 @@ class MEMMModel:
                             exponent = numpy.dot(featureVec, sub_v)
                         else:
                             # only calculate tag bigram and tag trigrams
-                            featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToTagBigramFeatureIndices[tag])
-                            sub_v = [v[j] for j in self.tagToTagBigramFeatureIndices[tag]]
+                            featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToTagNgramFeatureIndices[tag])
+                            sub_v = [v[j] for j in self.tagToTagNgramFeatureIndices[tag]]
                             exponent = numpy.dot(featureVec, sub_v)
                         try:
                             innerSum += math.exp(exponent)
@@ -362,8 +397,8 @@ class MEMMModel:
                             allFeatureVecsByTags[tag] = featureVec
                             P[tag] = math.exp(power)
                         else:
-                            featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToTagBigramFeatureIndices[tag])
-                            sub_v = [v[j] for j in self.tagToTagBigramFeatureIndices[tag]]
+                            featureVec = self.calcFeatureVecWord(word,tag,prevTag,prevPrevTag,self.tagToTagNgramFeatureIndices[tag])
+                            sub_v = [v[j] for j in self.tagToTagNgramFeatureIndices[tag]]
                             power = numpy.dot(featureVec, sub_v)
                             allFeatureVecsByTags[tag] = featureVec
                             P[tag] = math.exp(power)
@@ -376,8 +411,8 @@ class MEMMModel:
                                 f_k = allFeatureVecsByTags[tag][featureIndex]
                                 val[k] -= (f_k * P[tag] / sumP)
                         else:
-                            for k in self.tagToTagBigramFeatureIndices[tag]:
-                                featureIndex = self.tagToTagBigramFeatureIndices[tag].index(k)
+                            for k in self.tagToTagNgramFeatureIndices[tag]:
+                                featureIndex = self.tagToTagNgramFeatureIndices[tag].index(k)
                                 f_k = allFeatureVecsByTags[tag][featureIndex]
                                 val[k] -= (f_k * P[tag] / sumP)
                     i = i + 1
