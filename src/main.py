@@ -41,16 +41,19 @@ def calcStat(wordDict,outfileSuff,outfilePref):
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
 lamda = 0.5;
-#featureLevel = 1; # basic
-featureLevel = 2; # med
+featureLevel = 1; # basic
+# featureLevel = 2; # med
 #featureLevel = 4; # advanced
-numSentences = 100;
+numSentences = 5000;
 basicFeaturesMinWordCount = 10;
+medFeaturesUniCount = 1000
+medFeaturesBiCount = 1000
+medFeaturesTriCount = 1000
 verbose = True
 
 print "initializing..."
 t1 = time.clock()
-model = MEMMModel.MEMMModel(verbose,basicFeaturesMinWordCount);
+model = MEMMModel.MEMMModel(verbose,basicFeaturesMinWordCount,medFeaturesUniCount,medFeaturesBiCount,medFeaturesTriCount);
 model.initModelFromFile(wordfile,tagfile,lamda,featureLevel,numSentences)
 #calcStat(model.dictionary,"train_suff_stats.txt","train_pref_stats.txt")
 t2 = time.clock();

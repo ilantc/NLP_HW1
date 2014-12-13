@@ -9,7 +9,7 @@ import cPickle as pickle
 
 class MEMMModel:
     
-    def __init__(self,verbose,minFeatureCount):
+    def __init__(self,verbose,basicFeatureMinCount,medFeatureUniGramMinCount,medFeatureTriGramMinCount,medFeatureBiGramMinCount):
         # dictionary is a mapping from word to (tag,count) tuple list
         self.dictionary = {}
         # an ordered list of functions from (sentence,index,tag_i-1.tag_i-2) to bool
@@ -41,7 +41,10 @@ class MEMMModel:
         
         # minimum number of feature appearance in training data 
         # if a feature occures less than this number - dont include it in the model
-        self.minFeatureCount = minFeatureCount
+        self.minFeatureCount = basicFeatureMinCount
+        self.medFeatureUniGramMinCount = medFeatureUniGramMinCount
+        self.medFeatureTriGramMinCount = medFeatureTriGramMinCount
+        self.medFeatureBiGramMinCount = medFeatureBiGramMinCount
     
     def summarize(self):
         """ print a summary of the model""" 
@@ -146,6 +149,9 @@ class MEMMModel:
             self.allWordsFeatureVecs = model.allWordsFeatureVecs
             self.v = model.v
             self.minFeatureCount = model.minFeatureCount
+            self.medFeatureUniGramMinCount = model.medFeatureUniGramMinCount
+            self.medFeatureTriGramMinCount = model.medFeatureTriGramMinCount
+            self.medFeatureBiGramMinCount = model.medFeatureBiGramMinCount
         
         self.loadFeaturesFromRaw()
     
@@ -300,38 +306,48 @@ class MEMMModel:
     def initMediumFeatures(self,allTagUnigrams,allTagBigrams,allTagTrigrams):
         suffixes = ['s','e','ed','y','n','ing','t','es','l','er','ly','ion','ted','ers','ent','ons','ies']
         prefixes = ['re','co','in','pr','de','st','con','di','pro']
+        uniF = 0
+        BiF = 0
+        triF = 0
         for s in suffixes:
             for tag in allTagUnigrams:
-                if allTagUnigrams[tag] > self.minFeatureCount:
+                if allTagUnigrams[tag] > self.medFeatureUniGramMinCount:
                     f = feature.morphologicalFeature(s,False,tag,"5_suff_" + s + "_" + tag)
                     self.featureSet.append(f)
+                    uniF += 1
                     self.addToFeatureMap(tag, len(self.featureSet) - 1)
             for (tag,prevTag) in allTagBigrams:
-                if allTagBigrams[(tag,prevTag)] > self.minFeatureCount:
+                if allTagBigrams[(tag,prevTag)] > self.medFeatureBiGramMinCount:
                     f = feature.morphologicalBigramFeature(s,False,tag,prevTag,"6_suff_" + s + "_" + tag + "_" + prevTag)
                     self.featureSet.append(f)
+                    BiF += 1
                     self.addToFeatureMap(tag, len(self.featureSet) - 1)
             for (tag,prevTag,prevPrevTag) in allTagTrigrams:
-                if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.minFeatureCount:
+                if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.medFeatureTriGramMinCount:
                     f = feature.morphologicalTrigramFeature(s,False,tag,prevTag,prevPrevTag,"7_suff_" + s + "_" + tag + "_" + prevTag + "_" + prevPrevTag)
                     self.featureSet.append(f)
+                    triF += 1
                     self.addToFeatureMap(tag, len(self.featureSet) - 1)
         for p in prefixes:
             for tag in allTagUnigrams:
-                if allTagUnigrams[tag] > self.minFeatureCount:
+                if allTagUnigrams[tag] > self.medFeatureUniGramMinCount:
                     f = feature.morphologicalFeature(p,True,tag,"8_pref_" + p + "_" + tag)
                     self.featureSet.append(f)
+                    uniF += 1
                     self.addToFeatureMap(tag, len(self.featureSet) - 1)
             for (tag,prevTag) in allTagBigrams:
-                if allTagBigrams[(tag,prevTag)] > self.minFeatureCount:
+                if allTagBigrams[(tag,prevTag)] > self.medFeatureBiGramMinCount:
                     f = feature.morphologicalBigramFeature(p,True,tag,prevTag,"9_pref_" + p + "_" + tag + "_" + prevTag)
                     self.featureSet.append(f)
+                    BiF += 1
                     self.addToFeatureMap(tag, len(self.featureSet) - 1)
             for (tag,prevTag,prevPrevTag) in allTagTrigrams:
-                if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.minFeatureCount:
+                if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.medFeatureTriGramMinCount:
                     f = feature.morphologicalTrigramFeature(p,True,tag,prevTag,prevPrevTag,"10_pref_" + p + "_" + tag + "_" + prevTag + "_" + prevPrevTag)
                     self.featureSet.append(f)
+                    triF += 1
                     self.addToFeatureMap(tag, len(self.featureSet) - 1)
+        print "unigram count =",uniF, "BigramCount =",BiF,"trigram count =", triF
         for tag in self.tagSet:
             if not self.tagToTagNgramFeatureIndices.has_key(tag):
                 self.tagToTagNgramFeatureIndices[tag] = []
