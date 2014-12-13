@@ -494,7 +494,7 @@ class MEMMModel:
                     print "\ts =",s,"out of",self.sentenceNum, "sentences, average iter time =",(time.clock() - t1)/s
             newVal = map(lambda x: -1 * x, val) # -1 as we want to maximize it and fmin_bfgs only computes min
             t2 = time.clock()
-            print "grad val:",newVal
+            #print "grad val:",newVal
             print "time to calc Grad L:", t2 - t1
             return scipy.array(newVal)
         return gradientL
