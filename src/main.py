@@ -41,8 +41,10 @@ def calcStat(wordDict,outfileSuff,outfilePref):
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
 lamda = 0.5;
-featureLevel = 1; # basic
-numSentences = 5000;
+#featureLevel = 1; # basic
+featureLevel = 2; # med
+#featureLevel = 4; # advanced
+numSentences = 100;
 basicFeaturesMinWordCount = 10;
 verbose = True
 

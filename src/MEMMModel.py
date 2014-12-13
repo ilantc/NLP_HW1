@@ -103,7 +103,7 @@ class MEMMModel:
                 f = feature.bigramWordTagFeature(rawFeature['word'], rawFeature['tag'], rawFeature['prevTag'], rawFeature['name'])
                 self.featureSet.append(f)
                 continue
-			if rawFeature['type'] == 'morphologicalFeature':
+            if rawFeature['type'] == 'morphologicalFeature':
                 f = feature.morphologicalFeature(rawFeature['subStr'], rawFeature['prefixOrSuffix'], rawFeature['tag'], rawFeature['name'])
                 self.featureSet.append(f)
                 continue
@@ -111,7 +111,7 @@ class MEMMModel:
                 f = feature.morphologicalBigramFeature(rawFeature['subStr'], rawFeature['prefixOrSuffix'], rawFeature['tag'], rawFeature['prevTag'], rawFeature['name'])
                 self.featureSet.append(f)
                 continue
-			if rawFeature['type'] == 'morphologicalTrigramFeature':
+            if rawFeature['type'] == 'morphologicalTrigramFeature':
                 f = feature.morphologicalTrigramFeature(rawFeature['subStr'], rawFeature['prefixOrSuffix'], rawFeature['tag'], rawFeature['prevTag'], rawFeature['prevPrevTag'], rawFeature['name'])
                 self.featureSet.append(f)
                 continue
@@ -256,7 +256,7 @@ class MEMMModel:
         if filter(lambda x: x == featureLevel, [1,3,5,7]):
             self.initBasicFeatures(allTagUnigrams,allTagBigrams,allTagTrigrams)
         if filter(lambda x: x == featureLevel, [2,3,6,7]):
-            self.initMediumFeatures()
+            self.initMediumFeatures(allTagUnigrams,allTagBigrams,allTagTrigrams)
         if filter(lambda x: x == featureLevel, [4,5,6,7]):
             self.initAdvancedFeatures()
         self.featureNum = len(self.featureSet)
@@ -297,46 +297,52 @@ class MEMMModel:
                 
         
     def initMediumFeatures(self,allTagUnigrams,allTagBigrams,allTagTrigrams):
-		suffixes = ['s','e','ed','y','n','ing','t','es','l','er','ly','ion','ted','ers','ent','ons','ies']
-		prefixes = ['re','co','in','pr','de','st','con','di','pro']
-		for s in suffixes:
-			for tag in allTagUnigrams:
-				if allTagUnigrams[tag] > self.minFeatureCount:
-					f = feature.morphologicalFeature(s,False,tag,"5_suff_" + s + "_" + tag)
-					self.featureSet.append(f)
-					self.addToFeatureMap(tag, len(self.featureSet) - 1)
-			for (tag,prevTag) in allTagBigrams:
-				if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.minFeatureCount:
-					f = feature.morphologicalFeature(s,False,tag,prevTag,"6_suff_" + s + "_" + tag + "_" + prevTag)
-					self.featureSet.append(f)
-					self.addToFeatureMap(tag, len(self.featureSet) - 1)
-			for (tag,prevTag,prevPrevTag) in allTagTrigrams:
-				if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.minFeatureCount:
-					f = feature.morphologicalFeature(s,False,tag,prevTag,prevPrevTag,"7_suff_" + s + "_" + tag + "_" + prevTag + "_" + prevPrevTag)
-					self.featureSet.append(f)
-					self.addToFeatureMap(tag, len(self.featureSet) - 1)
-		for p in prefixes:
-			for tag in allTagUnigrams:
-				if allTagUnigrams[tag] > self.minFeatureCount:
-					f = feature.morphologicalFeature(p,True,tag,"8_pref_" + p + "_" + tag)
-					self.featureSet.append(f)
-					self.addToFeatureMap(tag, len(self.featureSet) - 1)
-			for (tag,prevTag) in allTagBigrams:
-				if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.minFeatureCount:
-					f = feature.morphologicalFeature(p,True,tag,prevTag,"9_pref_" + p + "_" + tag + "_" + prevTag)
-					self.featureSet.append(f)
-					self.addToFeatureMap(tag, len(self.featureSet) - 1)
-			for (tag,prevTag,prevPrevTag) in allTagTrigrams:
-				if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.minFeatureCount:
-					f = feature.morphologicalFeature(p,True,tag,prevTag,prevPrevTag,"10_pref_" + p + "_" + tag + "_" + prevTag + "_" + prevPrevTag)
-					self.featureSet.append(f)
-					self.addToFeatureMap(tag, len(self.featureSet) - 1)
-		for tag in self.tagSet:
+        suffixes = ['s','e','ed','y','n','ing','t','es','l','er','ly','ion','ted','ers','ent','ons','ies']
+        prefixes = ['re','co','in','pr','de','st','con','di','pro']
+        for s in suffixes:
+            for tag in allTagUnigrams:
+                if allTagUnigrams[tag] > self.minFeatureCount:
+                    f = feature.morphologicalFeature(s,False,tag,"5_suff_" + s + "_" + tag)
+                    self.featureSet.append(f)
+                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
+            for (tag,prevTag) in allTagBigrams:
+                if allTagBigrams[(tag,prevTag)] > self.minFeatureCount:
+                    f = feature.morphologicalBigramFeature(s,False,tag,prevTag,"6_suff_" + s + "_" + tag + "_" + prevTag)
+                    self.featureSet.append(f)
+                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
+            for (tag,prevTag,prevPrevTag) in allTagTrigrams:
+                if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.minFeatureCount:
+                    f = feature.morphologicalTrigramFeature(s,False,tag,prevTag,prevPrevTag,"7_suff_" + s + "_" + tag + "_" + prevTag + "_" + prevPrevTag)
+                    self.featureSet.append(f)
+                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
+        for p in prefixes:
+            for tag in allTagUnigrams:
+                if allTagUnigrams[tag] > self.minFeatureCount:
+                    f = feature.morphologicalFeature(p,True,tag,"8_pref_" + p + "_" + tag)
+                    self.featureSet.append(f)
+                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
+            for (tag,prevTag) in allTagBigrams:
+                if allTagBigrams[(tag,prevTag)] > self.minFeatureCount:
+                    f = feature.morphologicalBigramFeature(p,True,tag,prevTag,"9_pref_" + p + "_" + tag + "_" + prevTag)
+                    self.featureSet.append(f)
+                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
+            for (tag,prevTag,prevPrevTag) in allTagTrigrams:
+                if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.minFeatureCount:
+                    f = feature.morphologicalTrigramFeature(p,True,tag,prevTag,prevPrevTag,"10_pref_" + p + "_" + tag + "_" + prevTag + "_" + prevPrevTag)
+                    self.featureSet.append(f)
+                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
+        for tag in self.tagSet:
             if not self.tagToTagNgramFeatureIndices.has_key(tag):
                 self.tagToTagNgramFeatureIndices[tag] = []
             if not self.tagToFeatureIndices.has_key(tag):
                 self.tagToFeatureIndices[tag] = []
+        self.calcEmpiricalCounts()
     
+    def calcEmpiricalCounts(self):
+        for sentence in self.sentenceNum:
+            for i in range(0,sentence.len):
+                print ""
+            
     def initAdvancedFeatures(self):
         return
        

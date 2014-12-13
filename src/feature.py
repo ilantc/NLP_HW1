@@ -18,7 +18,7 @@ class morphologicalFeature(feature):
             regex = regex + "$";
         self.f = lambda (word,_tag): re.search(regex, word) and (_tag == self.tag)
         self.name = name;
-		self.tag = tag
+        self.tag = tag
         self.subStr = subStr;
         self.prefixOrSuffix = prefixOrSuffix
     
@@ -39,8 +39,8 @@ class morphologicalBigramFeature(feature):
             regex = regex + "$";
         self.f = lambda (word,_tag,_prevTag): re.search(regex, word) and (_tag == self.tag) and (_prevTag == self.prevTag)
         self.name = name;
-		self.tag = tag
-		self.prevTag = prevTag
+        self.tag = tag
+        self.prevTag = prevTag
         self.subStr = subStr;
         self.prefixOrSuffix = prefixOrSuffix
     
@@ -62,9 +62,9 @@ class morphologicalTrigramFeature(feature):
             regex = regex + "$";
         self.f = lambda (word,_tag,_prevTag,_prevPrevTag): re.search(regex, word) and (_tag == self.tag) and (_prevTag == self.prevTag) and (_prevPrevTag == self.prevPrevTag)
         self.name = name;
-		self.tag = tag
-		self.prevTag = prevTag
-		self.prevPrevTag = prevPrevTag
+        self.tag = tag
+        self.prevTag = prevTag
+        self.prevPrevTag = prevPrevTag
         self.subStr = subStr;
         self.prefixOrSuffix = prefixOrSuffix
     
