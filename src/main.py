@@ -40,7 +40,7 @@ def calcStat(wordDict,outfileSuff,outfilePref):
 # tagfile = "../data/sec2-21/small.pos";
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
-lamda = 0.5;
+lamda = 5;
 #featureLevel = 1; # basic
 featureLevel = 2; # med
 #featureLevel = 4; # advanced
@@ -64,7 +64,7 @@ t1 = time.clock()
 model.trainModel()
 t2 = time.clock()
 print "time to train: ", t2 - t1
-model.save("basicModel_5k.pkl")
+model.save("advancedModel_5k_lambda_5.pkl")
 model.summarize();
 
 

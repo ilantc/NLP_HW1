@@ -135,6 +135,8 @@ class MEMMModel:
                    
     def load(self, filename):
         """ load a model from file """ 
+        print "loading model..."
+        t1 = time.clock()
         with open(filename, 'rb') as inputFile:
             model = pickle.load(inputFile)
             self.dictionary = model.dictionary
@@ -152,8 +154,10 @@ class MEMMModel:
             self.medFeatureUniGramMinCount = model.medFeatureUniGramMinCount
             self.medFeatureTriGramMinCount = model.medFeatureTriGramMinCount
             self.medFeatureBiGramMinCount = model.medFeatureBiGramMinCount
-        
+        t2 = time.clock()
+        print "time to load raw data =",t2 - t1
         self.loadFeaturesFromRaw()
+        print "time to convert features to objects =",time.clock() - t2
     
     def readGoldenFile(self,wordfile, tagfile, numSentences):
         """ read training file """ 
