@@ -1,4 +1,5 @@
 import MEMMModel;
+import ViterbiMEMMModel;
 import time;
 import winsound;
 import cProfile
@@ -64,6 +65,12 @@ t1 = time.clock()
 model.trainModel()
 t2 = time.clock()
 print "time to train: ", t2 - t1
+t1 = time.clock()
+viterbi = ViterbiMEMMModel.ViterbiMEMMModel(model)
+tags=viterbi.tagSentences()
+# print tags
+t2 = time.clock()
+print "time to infer: ", t2 - t1
 model.save("advancedModel_5k_lambda_5.pkl")
 model.summarize();
 
