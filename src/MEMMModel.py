@@ -99,7 +99,7 @@ class MEMMModel:
         for rawFeature in self.rawFeatures:
             # unfortunatly there is no switch statement in Python :( 
             if rawFeature['type'] == 'unigramWordTagFeature':
-                f = feature.unigramWordTagFeature(rawFeature['word'], rawFeature['tag'], rawFeature['name'])
+                f = feature.unigramWordTagFeature(rawFeature['word'], rawFeature['tag'], 0, rawFeature['name'])
                 self.featureSet.append(f)
                 continue
             if rawFeature['type'] == 'bigramWordTagFeature':
@@ -119,15 +119,15 @@ class MEMMModel:
                 self.featureSet.append(f)
                 continue
             if rawFeature['type'] == 'tagUnigramFeature':
-                f = feature.tagUnigramFeature(rawFeature['tag'], rawFeature['name'])
+                f = feature.tagUnigramFeature(rawFeature['tag'], 0, rawFeature['name'])
                 self.featureSet.append(f)
                 continue
             if rawFeature['type'] == 'tagBigramFeature':
-                f = feature.tagBigramFeature(rawFeature['tag'], rawFeature['prevTag'], rawFeature['name'])
+                f = feature.tagBigramFeature(rawFeature['tag'], rawFeature['prevTag'],0, rawFeature['name'])
                 self.featureSet.append(f)
                 continue
             if rawFeature['type'] == 'tagTrigramFeature':
-                f = feature.tagTrigramFeature(rawFeature['tag'], rawFeature['prevTag'], rawFeature['prevPrevTag'], rawFeature['name'])
+                f = feature.tagTrigramFeature(rawFeature['tag'], rawFeature['prevTag'], rawFeature['prevPrevTag'],0, rawFeature['name'])
                 self.featureSet.append(f)
                 continue
             raise 'unknown feature type'
