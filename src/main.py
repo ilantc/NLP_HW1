@@ -1,4 +1,5 @@
 import MEMMModel;
+import ViterbiMEMMModel;
 import time;
 import winsound;
 import cProfile
@@ -41,8 +42,8 @@ def calcStat(wordDict,outfileSuff,outfilePref):
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
 lamda = 5;
-featureLevel = 1; # basic
-#featureLevel = 2; # med
+#featureLevel = 1; # basic
+featureLevel = 2; # med
 #featureLevel = 4; # advanced
 numSentences = 5000;
 basicFeaturesMinWordCount = 10;
@@ -64,7 +65,13 @@ t1 = time.clock()
 model.trainModel()
 t2 = time.clock()
 print "time to train: ", t2 - t1
-model.save("basicModel_5k_lambda_5.pkl")
+t1 = time.clock()
+viterbi = ViterbiMEMMModel.ViterbiMEMMModel(model)
+tags=viterbi.tagSentences()
+# print tags
+t2 = time.clock()
+print "time to infer: ", t2 - t1
+model.save("advancedModel_5k_lambda_5.pkl")
 model.summarize();
 
 
