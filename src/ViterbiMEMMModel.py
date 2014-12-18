@@ -1,11 +1,7 @@
 import math
-from scipy.optimize import fmin_l_bfgs_b
-import scipy
 import numpy
-import feature
 import sentence
 import time
-import cPickle as pickle
 
 class ViterbiMEMMModel:
 
@@ -39,63 +35,65 @@ class ViterbiMEMMModel:
 
 
     def keywithmaxval(self,d,maxv):
-         v=list(d.values())
-         k=list(d.keys())
-         return k[v.index(maxv)]
+        v = d.values()
+        k = d.keys()
+        return k[v.index(maxv)]
 
 
     def tagSentences(self):
-        tags = []
-        print "tagging", self.sentenceNum, "sentences... "
+
+        #print "tagging", self.sentenceNum, "sentences... "
         i=1
+        allRes = []; 
         for sentence in self.allSentences[0:self.sentenceNum]:
             t1 = time.clock()
-            tags = tags + self.tagSentence(sentence)
+            tags = self.tagSentence(sentence)
+            allRes.append({'gold':sentence.tags[2:], 'predicted':tags});
             t2 = time.clock()
-            print "time to infer sentence ",i,":", t2 - t1
+            #print "time to infer sentence ",i,":", t2 - t1
             i=i+1
-        return tags
+        return allRes
 
     def tagSentence (self, sentence):
         pi = []
         bp = []
+        allTagSets = [['*'],['*']]
         for i in range(0,sentence.len):
             t1 = time.clock()
-
-            tagSetMinusOne = []
-            tagSetMinusTwo = []
-            if (i==0):
-                tagSetMinusOne.append('*')
-                tagSetMinusTwo.append('*')
-            if (i==1):
-                tagSetMinusOne=self.tagSet
-                tagSetMinusTwo.append('*')
-            if (i>1):
-                tagSetMinusOne=self.tagSet
-                tagSetMinusTwo=self.tagSet
-
             word = sentence.word(i)
+            if (self.MEMMModel.dictionary.has_key(word)):
+                currTagSet = [tag for (tag,_) in self.MEMMModel.dictionary[word]]
+            else:
+                currTagSet = self.MEMMModel.tagSet
+            allTagSets.append(currTagSet)
+            
             # calc q for all the possibilities
             q = {}
-            for tagMinusTwo in tagSetMinusTwo:
+            q_t1 = time.clock()
+           # print "calcing q for word", i
+            for tagMinusTwo in allTagSets[i]:
                 q[tagMinusTwo] = {}
-                for tagMinusOne in tagSetMinusOne:
+                for tagMinusOne in allTagSets[i+1]:
                     q[tagMinusTwo][tagMinusOne] = {}
                     norm = 0
-                    for tag in self.tagSet:
-                        featureVec=self.MEMMModel.calcFeatureVecWord(word,tag,tagMinusOne,tagMinusTwo)
-                        q[tagMinusTwo][tagMinusOne][tag]=math.exp(numpy.dot(featureVec, self.optV))
+                    for tag in allTagSets[i+2]:
+                        sub_v = [self.optV[j] for j in self.MEMMModel.tagToFeatureIndices[tag]]
+                        featureVec=self.MEMMModel.calcFeatureVecWord(word,tag,tagMinusOne,tagMinusTwo,self.MEMMModel.tagToFeatureIndices[tag])
+                        q[tagMinusTwo][tagMinusOne][tag]=math.exp(numpy.dot(featureVec, sub_v))
                         norm = norm + q[tagMinusTwo][tagMinusOne][tag]
-                    for tag in self.tagSet:
+                    for tag in allTagSets[i+2]:
                         q[tagMinusTwo][tagMinusOne][tag]=q[tagMinusTwo][tagMinusOne][tag]/norm
+            #print "time to calc q for word",i,time.clock() - q_t1
             pi.append({})
             bp.append({})
-            for tag in self.tagSet:
+            t_t1 = time.clock()
+           # print "calcing PI and BP  for word", i
+            for tag in allTagSets[i+2]:
                 pi[i][tag]={}
                 bp[i][tag]={}
-                for tagMinusOne in tagSetMinusOne:
+                for tagMinusOne in allTagSets[i+1]:
                     innerPI = {}
-                    for tagMinusTwo in tagSetMinusTwo:
+                    for tagMinusTwo in allTagSets[i]:
                         if (i==0):
                             innerPI[tagMinusTwo] = q[tagMinusTwo][tagMinusOne][tag]/norm
                         else:
@@ -103,13 +101,14 @@ class ViterbiMEMMModel:
                     m=max(innerPI.values())
                     pi[i][tag][tagMinusOne] = m
                     bp[i][tag][tagMinusOne] = self.keywithmaxval(innerPI,m)
+           # print "time to calc PI and BP for word",i,time.clock() - t_t1
             t2 = time.clock()
-            print "word #",i,":" , t2 - t1
+            #print "word #",i,":" , t2 - t1
         m=0
-        t=[0 for x in range(sentence.len)]
+        t= [0] * sentence.len
         n=sentence.len-1
-        for tagN in self.tagSet:
-            for tagNMinusOne in self.tagSet:
+        for tagN in allTagSets[i+2]:
+            for tagNMinusOne in allTagSets[i+1]:
                 if pi[n][tagN][tagNMinusOne] > m :
                     m=pi[n][tagN][tagNMinusOne]
                     t[n] =  tagN
@@ -118,9 +117,12 @@ class ViterbiMEMMModel:
             j=n-2-i
             t[j] = bp[j+2][t[j+2]][t[j+1]]
 
+        numCorrect = 0
         for i in range(0,sentence.len):
-            print sentence.word(i) + ' ' + sentence.tag(i) + 'result:' + t[i]
-
+            if (sentence.tag(i) == t[i]):
+                numCorrect += 1
+            #print sentence.word(i) + ' ' + sentence.tag(i) + ' result:' + t[i]
+        print "\tnum correct =",numCorrect,"/",sentence.len
 
         return t
 

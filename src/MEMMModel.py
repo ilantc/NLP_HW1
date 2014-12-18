@@ -384,7 +384,7 @@ class MEMMModel:
         print "calculating feature vec for all words and golden tags..."
         s = 0
         t1 = time.clock()
-        printStep = int(self.sentenceNum/5)
+        printStep = max(1,int(self.sentenceNum/5))
         for sentence in self.allSentences:
             for index in range(0,sentence.len):
                 tag = sentence.tag(index)
@@ -408,7 +408,7 @@ class MEMMModel:
             val = 0
             i = 0
             s = 0
-            printStep = int(self.sentenceNum/5)
+            printStep = max(1,int(self.sentenceNum/5))
             for sentence in self.allSentences:
                 for index in range(0,sentence.len):
                     val = val + numpy.dot(v, self.allWordsFeatureVecs[i])
@@ -455,7 +455,7 @@ class MEMMModel:
             v = args[0]
             val = [empirical - (self.lamda * regularization) for (empirical,regularization) in \
                    zip(self.empiricalCounts,v)]
-            printStep = int(self.sentenceNum/5)
+            printStep = max(1,int(self.sentenceNum/5))
             i = 0
             s = 0
             for sentence in self.allSentences:

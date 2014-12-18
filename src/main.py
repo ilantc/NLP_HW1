@@ -1,8 +1,6 @@
 import MEMMModel;
 import ViterbiMEMMModel;
 import time;
-import winsound;
-import cProfile
 import operator
 
 
@@ -41,24 +39,38 @@ def calcStat(wordDict,outfileSuff,outfilePref):
 # tagfile = "../data/sec2-21/small.pos";
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
-lamda = 5;
+lamda = 1;
 featureLevel = 1; # basic
 #featureLevel = 2; # med
 #featureLevel = 4; # advanced
-numSentences = 5;
+numSentences = 100;
 basicFeaturesMinWordCount = 0;
 medFeaturesUniCount = 800
 medFeaturesBiCount = 800
 medFeaturesTriCount = 400
 verbose = True
 model = MEMMModel.MEMMModel(True,0,0,0,0)
-model.load('./models/advancedModel_5k_lambda_0.5.pkl')
+# model.initModelFromFile("../data/sec2-21/sec2-21.words", "../data/sec2-21/sec2-21.pos", lamda, featureLevel, numSentences)
+# model.trainModel()
+model.load('../../NLP_HW1/models/advancedModel_5k_lambda_0.5.pkl')
+t1 = time.clock()
 viterbi = ViterbiMEMMModel.ViterbiMEMMModel(model,numSentences)
-tags=viterbi.tagSentences()
+allRes=viterbi.tagSentences()
+averagePrecision = 0.0;
+
+for res in allRes:
+    gold = res['gold']
+    predicted = res['predicted']
+    sumEq = sum([x == y for (x,y) in zip(gold,predicted)])
+    #print "sumEq =", sumEq, "sum/len =",float(sumEq)/float(len(gold)) 
+    averagePrecision += float(sumEq)/float(len(gold)) 
+averagePrecision = averagePrecision/float(len(allRes))
+print ("average precision =",averagePrecision)
+    
 # print tags
 t2 = time.clock()
 print "time to infer: ", t2 - t1
-model.save("advancedModel_5k_lambda_5.pkl")
+#model.save("advancedModel_5k_lambda_5.pkl")
 model.summarize();
 
 
