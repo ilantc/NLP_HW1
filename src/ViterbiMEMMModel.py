@@ -45,7 +45,7 @@ class ViterbiMEMMModel:
         #print "tagging", self.sentenceNum, "sentences... "
         i=1
         allRes = []; 
-        for sentence in self.allSentences[0:self.sentenceNum]:
+        for sentence in self.allSentencesForTagging[0:self.numberOfAllSentencesForTagging]:
             t1 = time.clock()
             tags = self.tagSentence(sentence)
             allRes.append({'gold':sentence.tags[2:], 'predicted':tags});
@@ -53,6 +53,27 @@ class ViterbiMEMMModel:
             #print "time to infer sentence ",i,":", t2 - t1
             i=i+1
         return allRes
+
+
+    def readGoldenFile(self,wordfile, tagfile, numSentences, offset):
+        """ read training file """
+        wf = open(wordfile,'rt')
+        tf = open(tagfile,'rt')
+        allSentencesForTagging = []
+        wlines = wf.readlines()
+        tlines = tf.readlines()
+        # build and save sentence objects
+        for i in range(offset,offset + numSentences):
+            # new sentence
+            words = wlines[i].split()
+            tags = tlines[i].split()
+            s = sentence.sentence(words,tags)
+            allSentencesForTagging.append(s)
+        wf.close()
+        tf.close()
+        # save data
+        self.allSentencesForTagging = allSentencesForTagging
+        self.numberOfAllSentencesForTagging = len(allSentencesForTagging)
 
     def tagSentence (self, sentence):
         pi = []

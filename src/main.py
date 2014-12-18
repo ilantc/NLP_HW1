@@ -43,7 +43,7 @@ lamda = 1;
 featureLevel = 1; # basic
 #featureLevel = 2; # med
 #featureLevel = 4; # advanced
-numSentences = 100;
+numSentences = 1000;
 basicFeaturesMinWordCount = 0;
 medFeaturesUniCount = 800
 medFeaturesBiCount = 800
@@ -55,6 +55,7 @@ model = MEMMModel.MEMMModel(True,0,0,0,0)
 model.load('../../NLP_HW1/models/advancedModel_5k_lambda_0.5.pkl')
 t1 = time.clock()
 viterbi = ViterbiMEMMModel.ViterbiMEMMModel(model,numSentences)
+viterbi.readGoldenFile(wordfile, tagfile, 1000, 5000)
 allRes=viterbi.tagSentences()
 averagePrecision = 0.0;
 
