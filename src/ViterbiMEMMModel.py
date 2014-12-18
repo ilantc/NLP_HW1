@@ -9,11 +9,11 @@ import cPickle as pickle
 
 class ViterbiMEMMModel:
 
-    def __init__(self,MEMMModel):
+    def __init__(self,MEMMModel,sentenceNum):
         self.MEMMModel= MEMMModel
         # list of sentence objects (for training)
         self.allSentences = MEMMModel.allSentences
-        self.sentenceNum = MEMMModel.sentenceNum
+        self.sentenceNum = sentenceNum
         self.tagSet = MEMMModel.tagSet
         self.optV = MEMMModel.v
 
@@ -46,13 +46,22 @@ class ViterbiMEMMModel:
 
     def tagSentences(self):
         tags = []
-        for sentence in self.allSentences:
+        print "tagging", self.sentenceNum, "sentences... "
+        i=1
+        for sentence in self.allSentences[0:self.sentenceNum]:
+            t1 = time.clock()
             tags = tags + self.tagSentence(sentence)
+            t2 = time.clock()
+            print "time to infer sentence ",i,":", t2 - t1
+            i=i+1
         return tags
+
     def tagSentence (self, sentence):
         pi = []
         bp = []
         for i in range(0,sentence.len):
+            t1 = time.clock()
+
             tagSetMinusOne = []
             tagSetMinusTwo = []
             if (i==0):
@@ -94,6 +103,8 @@ class ViterbiMEMMModel:
                     m=max(innerPI.values())
                     pi[i][tag][tagMinusOne] = m
                     bp[i][tag][tagMinusOne] = self.keywithmaxval(innerPI,m)
+            t2 = time.clock()
+            print "word #",i,":" , t2 - t1
         m=0
         t=[0 for x in range(sentence.len)]
         n=sentence.len-1
@@ -109,5 +120,7 @@ class ViterbiMEMMModel:
 
         for i in range(0,sentence.len):
             print sentence.word(i) + ' ' + sentence.tag(i) + 'result:' + t[i]
+
+
         return t
 

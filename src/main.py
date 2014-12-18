@@ -42,31 +42,18 @@ def calcStat(wordDict,outfileSuff,outfilePref):
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
 lamda = 5;
-#featureLevel = 1; # basic
-featureLevel = 2; # med
+featureLevel = 1; # basic
+#featureLevel = 2; # med
 #featureLevel = 4; # advanced
-numSentences = 5000;
-basicFeaturesMinWordCount = 10;
+numSentences = 5;
+basicFeaturesMinWordCount = 0;
 medFeaturesUniCount = 800
 medFeaturesBiCount = 800
 medFeaturesTriCount = 400
 verbose = True
-
-print "initializing..."
-t1 = time.clock()
-model = MEMMModel.MEMMModel(verbose,basicFeaturesMinWordCount,medFeaturesUniCount,medFeaturesBiCount,medFeaturesTriCount);
-model.initModelFromFile(wordfile,tagfile,lamda,featureLevel,numSentences)
-#calcStat(model.dictionary,"train_suff_stats.txt","train_pref_stats.txt")
-t2 = time.clock();
-print "time to initialize: ", t2 - t1
-model.summarize();
-t1 = time.clock()
-#cProfile.run('model.trainModel()')
-model.trainModel()
-t2 = time.clock()
-print "time to train: ", t2 - t1
-t1 = time.clock()
-viterbi = ViterbiMEMMModel.ViterbiMEMMModel(model)
+model = MEMMModel.MEMMModel(True,0,0,0,0)
+model.load('./models/advancedModel_5k_lambda_0.5.pkl')
+viterbi = ViterbiMEMMModel.ViterbiMEMMModel(model,numSentences)
 tags=viterbi.tagSentences()
 # print tags
 t2 = time.clock()
