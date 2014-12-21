@@ -4,11 +4,9 @@ import sentence
 
 class ViterbiMEMMModel:
 
-    def __init__(self,MEMMModel,sentenceNum):
+    def __init__(self,MEMMModel):
         self.MEMMModel= MEMMModel
         # list of sentence objects (for training)
-        self.allSentences = MEMMModel.allSentences
-        self.sentenceNum = sentenceNum
         self.tagSet = MEMMModel.tagSet
         self.optV = MEMMModel.v
 
@@ -133,7 +131,7 @@ class ViterbiMEMMModel:
             if (sentence.tag(i) == t[i]):
                 numCorrect += 1
             #print sentence.word(i) + ' ' + sentence.tag(i) + ' result:' + t[i]
-        print "\tnum correct =",numCorrect,"/",sentence.len
+        # print "\tnum correct =",numCorrect,"/",sentence.len
 
         return t
 

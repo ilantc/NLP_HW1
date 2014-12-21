@@ -37,42 +37,78 @@ def calcStat(wordDict,outfileSuff,outfilePref):
 
 # wordfile = "../data/sec2-21/small.words";
 # tagfile = "../data/sec2-21/small.pos";
+
+def processResults(allRes, allTags):
+    # init dict 
+    tag2counts = {}
+    for tag in allTags:
+        tag2counts[tag] = {'totalGold' : 0, 'totalPredicted' : 0, 'correctPred' : 0}
+    for res in allRes:
+        gold = res['gold']
+        predicted = res['predicted']
+        for i in range(0,len(gold)):
+            goldTag = gold[i]
+            predictedTag = predicted[i]
+            tag2counts[goldTag]['totalGold'] += 1
+            tag2counts[predictedTag]['totalPredicted'] += 1
+            if goldTag == predictedTag:
+                tag2counts[goldTag]['correctPred'] += 1
+    
+    totalFscoreCount = 0
+    for tag in allTags:
+        precision = tag2counts[tag]['correctPred'] / tag2counts[tag]['totalPredicted']
+        recall = tag2counts[tag]['correctPred'] / tag2counts[tag]['totalGold'] 
+        fScore = 2 * precision * recall / (precision + recall)
+        totalFscoreCount += fScore
+        tag2counts[tag] = {'fScore': fScore}
+        print "tag", tag, "\tFscore", fScore
+    totalFscoreCount = totalFscoreCount / len(allTags)
+    
+    print "average Fscore = ", totalFscoreCount
+    
+        
+
+    
+
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
 lamda = 1;
 featureLevel = 1; # basic
 #featureLevel = 2; # med
 #featureLevel = 4; # advanced
-numSentences = 1000;
-basicFeaturesMinWordCount = 0;
+trainingOffset = 0;
+trainingSentenceNum = 5000;
+devSetOffset = trainingSentenceNum;
+devSetSentenceNum = 2000;
+testSetOffset = trainingSentenceNum + devSetSentenceNum;
+testSetSentenceNum = 5000;
+
+basicFeaturesMinWordCount = 10;
 medFeaturesUniCount = 800
 medFeaturesBiCount = 800
 medFeaturesTriCount = 400
 verbose = True
-model = MEMMModel.MEMMModel(True,0,0,0,0)
+
 # model.initModelFromFile("../data/sec2-21/sec2-21.words", "../data/sec2-21/sec2-21.pos", lamda, featureLevel, numSentences)
 # model.trainModel()
-model.load('../../NLP_HW1/models/advancedModel_5k_lambda_0.5.pkl')
-t1 = time.clock()
-viterbi = ViterbiMEMMModel.ViterbiMEMMModel(model,numSentences)
-viterbi.readGoldenFile(wordfile, tagfile, 1000, 5000)
-allRes=viterbi.tagSentences()
-averagePrecision = 0.0;
-
-for res in allRes:
-    gold = res['gold']
-    predicted = res['predicted']
-    sumEq = sum([x == y for (x,y) in zip(gold,predicted)])
-    #print "sumEq =", sumEq, "sum/len =",float(sumEq)/float(len(gold)) 
-    averagePrecision += float(sumEq)/float(len(gold)) 
-averagePrecision = averagePrecision/float(len(allRes))
-print ("average precision =",averagePrecision)
-    
-# print tags
-t2 = time.clock()
-print "time to infer: ", t2 - t1
 #model.save("advancedModel_5k_lambda_5.pkl")
-model.summarize();
+
+for modelFileName in ['advancedModel_5k_lambda_0.5.pkl','advancedModel_5k_lambda_5.pkl','basicModel_5k_lambda_5.pkl','basicModel_5k_lambda_0.5.pkl']:
+    modelFile = '../../NLP_HW1/models/' + modelFileName
+    model = MEMMModel.MEMMModel(verbose,0,0,0,0)
+    model.load(modelFile)
+    print "model File Name:",modelFile
+    model.summarize();
+    t1 = time.clock()
+    viterbi = ViterbiMEMMModel.ViterbiMEMMModel(model)
+    viterbi.readGoldenFile(wordfile, tagfile, devSetSentenceNum, devSetOffset)
+    allRes = viterbi.tagSentences()
+    t2 = time.clock()
+    print "time to infer: ", t2 - t1
+    processResults(allRes)
+    
+
+
 
 
 #winsound.PlaySound("../yofi_sehel.wav",winsound.SND_FILENAME)
