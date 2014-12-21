@@ -1,7 +1,6 @@
 import math
 import numpy
 import sentence
-import time
 
 class ViterbiMEMMModel:
 
@@ -46,10 +45,8 @@ class ViterbiMEMMModel:
         i=1
         allRes = []; 
         for sentence in self.allSentencesForTagging[0:self.numberOfAllSentencesForTagging]:
-            t1 = time.clock()
             tags = self.tagSentence(sentence)
             allRes.append({'gold':sentence.tags[2:], 'predicted':tags});
-            t2 = time.clock()
             #print "time to infer sentence ",i,":", t2 - t1
             i=i+1
         return allRes
@@ -80,7 +77,6 @@ class ViterbiMEMMModel:
         bp = []
         allTagSets = [['*'],['*']]
         for i in range(0,sentence.len):
-            t1 = time.clock()
             word = sentence.word(i)
             if (self.MEMMModel.dictionary.has_key(word)):
                 currTagSet = [tag for (tag,_) in self.MEMMModel.dictionary[word]]
@@ -90,8 +86,6 @@ class ViterbiMEMMModel:
             
             # calc q for all the possibilities
             q = {}
-            q_t1 = time.clock()
-           # print "calcing q for word", i
             for tagMinusTwo in allTagSets[i]:
                 q[tagMinusTwo] = {}
                 for tagMinusOne in allTagSets[i+1]:
@@ -107,8 +101,6 @@ class ViterbiMEMMModel:
             #print "time to calc q for word",i,time.clock() - q_t1
             pi.append({})
             bp.append({})
-            t_t1 = time.clock()
-           # print "calcing PI and BP  for word", i
             for tag in allTagSets[i+2]:
                 pi[i][tag]={}
                 bp[i][tag]={}
@@ -122,8 +114,6 @@ class ViterbiMEMMModel:
                     m=max(innerPI.values())
                     pi[i][tag][tagMinusOne] = m
                     bp[i][tag][tagMinusOne] = self.keywithmaxval(innerPI,m)
-           # print "time to calc PI and BP for word",i,time.clock() - t_t1
-            t2 = time.clock()
             #print "word #",i,":" , t2 - t1
         m=0
         t= [0] * sentence.len
