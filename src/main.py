@@ -2,6 +2,8 @@ import MEMMModel;
 import ViterbiMEMMModel;
 import time;
 import operator
+import math
+import csv
 
 
 def calcStat(wordDict,outfileSuff,outfilePref):
@@ -38,11 +40,16 @@ def calcStat(wordDict,outfileSuff,outfilePref):
 # wordfile = "../data/sec2-21/small.words";
 # tagfile = "../data/sec2-21/small.pos";
 
-def processResults(allRes, allTags):
+def processResults(allRes, allTags,filename,writer):
     # init dict 
     tag2counts = {}
+    confMatrix = {}
     for tag in allTags:
         tag2counts[tag] = {'totalGold' : 0, 'totalPredicted' : 0, 'correctPred' : 0}
+        confMatrix[tag] = {};
+        for tag2 in allTags:
+            confMatrix[tag][tag2] = 0;
+        
     for res in allRes:
         gold = res['gold']
         predicted = res['predicted']
@@ -53,20 +60,44 @@ def processResults(allRes, allTags):
             tag2counts[predictedTag]['totalPredicted'] += 1
             if goldTag == predictedTag:
                 tag2counts[goldTag]['correctPred'] += 1
+            confMatrix[predictedTag][goldTag] += 1
     
-    totalFscoreCount = 0
     for tag in allTags:
-        precision = tag2counts[tag]['correctPred'] / tag2counts[tag]['totalPredicted']
-        recall = tag2counts[tag]['correctPred'] / tag2counts[tag]['totalGold'] 
-        fScore = 2 * precision * recall / (precision + recall)
-        totalFscoreCount += fScore
-        tag2counts[tag] = {'fScore': fScore}
-        print "tag", tag, "\tFscore", fScore
-    totalFscoreCount = totalFscoreCount / len(allTags)
-    
-    print "average Fscore = ", totalFscoreCount
-    
-        
+        correctPred = tag2counts[tag]['correctPred']
+        totalPred = tag2counts[tag]['totalPredicted']
+        totalGold = tag2counts[tag]['totalGold']
+        print "tag", tag, "correctPred", correctPred, "totalPred", totalPred, "totalGold", totalGold
+        if correctPred == 0:
+            if (totalPred == 0) and (totalGold == 0):
+                precision = 1.0
+                recall = 1.0
+                fScore = 1.0
+            elif totalPred == 0:
+                precision = 1.0
+                recall = 0.0
+                fScore = 0.0
+            else:
+                precision =0.0
+                recall = 1.0
+                fScore = 0.0
+        else:
+            precision = float(correctPred) / float(totalPred)
+            recall = float(correctPred) / float(totalGold)
+            fScore = 2 * precision * recall / (precision + recall) 
+        tag2counts[tag]['fScore'] =  fScore
+        writer.writerow({'tag': tag, 'precision' : precision, 'recall': recall, 'fscore': fScore,'goldCount': totalGold,'predCount': totalPred,\
+                        'correctPred': correctPred, 'fileName': filename })
+    #print confusion matrix
+    confMatFileName = filename + '_confMatrix.csv'
+    csvfile2 = open(confMatFileName, 'w')
+    fieldnames = ["predictedTag"] + allTags
+    writer2 = csv.DictWriter(csvfile2, fieldnames=fieldnames)
+    writer2.writeheader()
+    for tag in confMatrix:
+        row = confMatrix[tag];
+        row['predictedTag'] = tag
+        writer2.writerow(row)
+    csvfile2.close
 
     
 
@@ -79,7 +110,7 @@ featureLevel = 1; # basic
 trainingOffset = 0;
 trainingSentenceNum = 5000;
 devSetOffset = trainingSentenceNum;
-devSetSentenceNum = 2000;
+devSetSentenceNum = 1500;
 testSetOffset = trainingSentenceNum + devSetSentenceNum;
 testSetSentenceNum = 5000;
 
@@ -93,7 +124,14 @@ verbose = True
 # model.trainModel()
 #model.save("advancedModel_5k_lambda_5.pkl")
 
-for modelFileName in ['advancedModel_5k_lambda_0.5.pkl','advancedModel_5k_lambda_5.pkl','basicModel_5k_lambda_5.pkl','basicModel_5k_lambda_0.5.pkl']:
+
+csvfile = open('res.csv', 'w')
+fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName']
+writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+writer.writeheader()
+allFiles = ['advancedModel_5k_lambda_0.5.pkl','advancedModel_5k_lambda_5.pkl','basicModel_5k_lambda_0.5.pkl','basicModel_5k_lambda_5.pkl']
+allFiles = ['basicModel_5k_lambda_5.pkl']
+for modelFileName in allFiles:
     modelFile = '../../NLP_HW1/models/' + modelFileName
     model = MEMMModel.MEMMModel(verbose,0,0,0,0)
     model.load(modelFile)
@@ -105,8 +143,8 @@ for modelFileName in ['advancedModel_5k_lambda_0.5.pkl','advancedModel_5k_lambda
     allRes = viterbi.tagSentences()
     t2 = time.clock()
     print "time to infer: ", t2 - t1
-    processResults(allRes)
-    
+    processResults(allRes,model.tagSet,modelFileName,writer)
+csvfile.close()
 
 
 

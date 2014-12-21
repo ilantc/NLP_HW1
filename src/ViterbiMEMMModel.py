@@ -1,6 +1,7 @@
 import math
 import numpy
 import sentence
+import time 
 
 class ViterbiMEMMModel:
 
@@ -40,13 +41,17 @@ class ViterbiMEMMModel:
     def tagSentences(self):
 
         #print "tagging", self.sentenceNum, "sentences... "
-        i=1
+        s=0
+        printStep = max(1,int(self.numberOfAllSentencesForTagging/5))
         allRes = []; 
+        t1 = time.clock()
         for sentence in self.allSentencesForTagging[0:self.numberOfAllSentencesForTagging]:
             tags = self.tagSentence(sentence)
             allRes.append({'gold':sentence.tags[2:], 'predicted':tags});
             #print "time to infer sentence ",i,":", t2 - t1
-            i=i+1
+            s=s+1
+            if (s % printStep) == 1:
+                print "\ts =",s,"out of",self.numberOfAllSentencesForTagging, "sentences, average iter time =",(time.clock() - t1)/s
         return allRes
 
 
