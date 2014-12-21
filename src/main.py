@@ -103,7 +103,7 @@ def processResults(allRes, allTags,filename,writer):
 
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
-lamda = 1;
+lamda = 0.5;
 featureLevel = 1; # basic
 #featureLevel = 2; # med
 #featureLevel = 4; # advanced
@@ -114,37 +114,43 @@ devSetSentenceNum = 1500;
 testSetOffset = trainingSentenceNum + devSetSentenceNum;
 testSetSentenceNum = 5000;
 
+includeUniGram = True
+includeBiGram = True
+includeTriGram = False
+
 basicFeaturesMinWordCount = 10;
 medFeaturesUniCount = 800
 medFeaturesBiCount = 800
 medFeaturesTriCount = 400
 verbose = True
 
-# model.initModelFromFile("../data/sec2-21/sec2-21.words", "../data/sec2-21/sec2-21.pos", lamda, featureLevel, numSentences)
-# model.trainModel()
-#model.save("advancedModel_5k_lambda_5.pkl")
+model = MEMMModel.MEMMModel(verbose,basicFeaturesMinWordCount,medFeaturesUniCount,medFeaturesBiCount,medFeaturesTriCount)
+model.initModelFromFile("../data/sec2-21/sec2-21.words", "../data/sec2-21/sec2-21.pos", lamda, featureLevel, \
+                        trainingSentenceNum,includeUniGram,includeBiGram,includeTriGram)
+model.trainModel()
+model.save("basicModelUniBi.pkl")
 
 
-csvfile = open('res.csv', 'w')
-fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName']
-writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-writer.writeheader()
-allFiles = ['advancedModel_5k_lambda_0.5.pkl','advancedModel_5k_lambda_5.pkl','basicModel_5k_lambda_0.5.pkl','basicModel_5k_lambda_5.pkl']
-allFiles = ['basicModel_5k_lambda_5.pkl']
-for modelFileName in allFiles:
-    modelFile = '../../NLP_HW1/models/' + modelFileName
-    model = MEMMModel.MEMMModel(verbose,0,0,0,0)
-    model.load(modelFile)
-    print "model File Name:",modelFile
-    model.summarize();
-    t1 = time.clock()
-    viterbi = ViterbiMEMMModel.ViterbiMEMMModel(model)
-    viterbi.readGoldenFile(wordfile, tagfile, devSetSentenceNum, devSetOffset)
-    allRes = viterbi.tagSentences()
-    t2 = time.clock()
-    print "time to infer: ", t2 - t1
-    processResults(allRes,model.tagSet,modelFileName,writer)
-csvfile.close()
+# csvfile = open('res.csv', 'w')
+# fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName']
+# writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+# writer.writeheader()
+# allFiles = ['advancedModel_5k_lambda_0.5.pkl','advancedModel_5k_lambda_5.pkl','basicModel_5k_lambda_0.5.pkl','basicModel_5k_lambda_5.pkl']
+# allFiles = ['basicModel_5k_lambda_5.pkl']
+# for modelFileName in allFiles:
+#     modelFile = '../../NLP_HW1/models/' + modelFileName
+#     model = MEMMModel.MEMMModel(verbose,0,0,0,0)
+#     model.load(modelFile)
+#     print "model File Name:",modelFile
+#     model.summarize();
+#     t1 = time.clock()
+#     viterbi = ViterbiMEMMModel.ViterbiMEMMModel(model)
+#     viterbi.readGoldenFile(wordfile, tagfile, devSetSentenceNum, devSetOffset)
+#     allRes = viterbi.tagSentences()
+#     t2 = time.clock()
+#     print "time to infer: ", t2 - t1
+#     processResults(allRes,model.tagSet,modelFileName,writer)
+# csvfile.close()
 
 
 

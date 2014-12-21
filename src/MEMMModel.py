@@ -235,9 +235,11 @@ class MEMMModel:
         self.featureNames = map(lambda x: x.name, self.featureSet)
         return
     
-    def initModelFromFile(self, wordfile,tagfile,lamda,featureLevel,numSentences):
+    def initModelFromFile(self, wordfile,tagfile,lamda,featureLevel,numSentences,includeUniGram,includeBiGram,includeTriGram):
         """ init the model""" 
-        # TODO - add offset (i.e. choose 5000 sentences starting from sentence 5001)
+        self.includeUniGram = includeUniGram
+        self.includeBiGram = includeBiGram
+        self.includeTriGram = includeTriGram
         self.readGoldenFile(wordfile,tagfile,numSentences)
         self.initModelParams(lamda,featureLevel)
     
@@ -276,30 +278,35 @@ class MEMMModel:
         print "time to calc features:", t2 - t1, ", num of features is", self.featureNum
     
     def initBasicFeatures(self,allTagUnigrams,allTagBigrams,allTagTrigrams):
-        for word in self.dictionary:
-            for (tag,count) in self.dictionary[word]:
-                if (count > self.minFeatureCount):
-                    f = feature.unigramWordTagFeature(word,tag,count,"1_" + word + "_" + tag)
+        if self.includeUniGram:
+            for word in self.dictionary:
+                for (tag,count) in self.dictionary[word]:
+                    if (count > self.minFeatureCount):
+                        f = feature.unigramWordTagFeature(word,tag,count,"1_" + word + "_" + tag)
+                        self.featureSet.append(f)
+                        self.addToFeatureMap(tag, len(self.featureSet) - 1)
+            for tag in allTagUnigrams:
+                if allTagUnigrams[tag] > self.minFeatureCount:
+                    f = feature.tagUnigramFeature(tag,allTagUnigrams[tag],"2_" + tag)
                     self.featureSet.append(f)
                     self.addToFeatureMap(tag, len(self.featureSet) - 1)
-        for tag in allTagUnigrams:
-            if allTagUnigrams[tag] > self.minFeatureCount:
-                f = feature.tagUnigramFeature(tag,allTagUnigrams[tag],"2_" + tag)
-                self.featureSet.append(f)
-                self.addToFeatureMap(tag, len(self.featureSet) - 1)
-                self.addToTagNgramFeatureMap(tag,len(self.featureSet) - 1)
-        for (tag,prevTag) in allTagBigrams:
-            if allTagBigrams[(tag,prevTag)] > self.minFeatureCount:
-                f = feature.tagBigramFeature(tag,prevTag,allTagBigrams[(tag,prevTag)],"3_" + tag + "_" + prevTag)
-                self.featureSet.append(f)
-                self.addToFeatureMap(tag, len(self.featureSet) - 1)
-                self.addToTagNgramFeatureMap(tag,len(self.featureSet) - 1)
-        for (tag,prevTag,prevPrevTag) in allTagTrigrams:
-            if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.minFeatureCount:
-                f = feature.tagTrigramFeature(tag,prevTag,prevPrevTag,allTagTrigrams[(tag,prevTag,prevPrevTag)],"4_" + tag + "_" + prevTag + "_" + prevPrevTag)
-                self.featureSet.append(f)
-                self.addToFeatureMap(tag, len(self.featureSet) - 1)
-                self.addToTagNgramFeatureMap(tag,len(self.featureSet) - 1)
+                    self.addToTagNgramFeatureMap(tag,len(self.featureSet) - 1)
+        if self.includeBiGram:
+            for (tag,prevTag) in allTagBigrams:
+                if allTagBigrams[(tag,prevTag)] > self.minFeatureCount:
+                    f = feature.tagBigramFeature(tag,prevTag,allTagBigrams[(tag,prevTag)],"3_" + tag + "_" + prevTag)
+                    self.featureSet.append(f)
+                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
+                    self.addToTagNgramFeatureMap(tag,len(self.featureSet) - 1)
+        if self.includeTriGram:
+            for (tag,prevTag,prevPrevTag) in allTagTrigrams:
+                if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.minFeatureCount:
+                    f = feature.tagTrigramFeature(tag,prevTag,prevPrevTag,allTagTrigrams[(tag,prevTag,prevPrevTag)],"4_" + tag + "_" + prevTag + "_" + prevPrevTag)
+                    self.featureSet.append(f)
+                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
+                    self.addToTagNgramFeatureMap(tag,len(self.featureSet) - 1)
+        
+        # fix mapping for missign tags
         for tag in self.tagSet:
             if not self.tagToTagNgramFeatureIndices.has_key(tag):
                 self.tagToTagNgramFeatureIndices[tag] = []
@@ -314,44 +321,52 @@ class MEMMModel:
         BiF = 0
         triF = 0
         for s in suffixes:
-            for tag in allTagUnigrams:
-                if allTagUnigrams[tag] > self.medFeatureUniGramMinCount:
-                    f = feature.morphologicalFeature(s,False,tag,"5_suff_" + s + "_" + tag)
-                    self.featureSet.append(f)
-                    uniF += 1
-                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
-            for (tag,prevTag) in allTagBigrams:
-                if allTagBigrams[(tag,prevTag)] > self.medFeatureBiGramMinCount:
-                    f = feature.morphologicalBigramFeature(s,False,tag,prevTag,"6_suff_" + s + "_" + tag + "_" + prevTag)
-                    self.featureSet.append(f)
-                    BiF += 1
-                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
-            for (tag,prevTag,prevPrevTag) in allTagTrigrams:
-                if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.medFeatureTriGramMinCount:
-                    f = feature.morphologicalTrigramFeature(s,False,tag,prevTag,prevPrevTag,"7_suff_" + s + "_" + tag + "_" + prevTag + "_" + prevPrevTag)
-                    self.featureSet.append(f)
-                    triF += 1
-                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
+            if self.includeUniGram:
+                for tag in allTagUnigrams:
+                    if allTagUnigrams[tag] > self.medFeatureUniGramMinCount:
+                        f = feature.morphologicalFeature(s,False,tag,"5_suff_" + s + "_" + tag)
+                        self.featureSet.append(f)
+                        uniF += 1
+                        self.addToFeatureMap(tag, len(self.featureSet) - 1)
+            if self.includeBiGram:
+                for (tag,prevTag) in allTagBigrams:
+                    if allTagBigrams[(tag,prevTag)] > self.medFeatureBiGramMinCount:
+                        f = feature.morphologicalBigramFeature(s,False,tag,prevTag,"6_suff_" + s + "_" + tag + "_" + prevTag)
+                        self.featureSet.append(f)
+                        BiF += 1
+                        self.addToFeatureMap(tag, len(self.featureSet) - 1)
+            if self.includeTriGram:
+                for (tag,prevTag,prevPrevTag) in allTagTrigrams:
+                    if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.medFeatureTriGramMinCount:
+                        f = feature.morphologicalTrigramFeature(s,False,tag,prevTag,prevPrevTag,"7_suff_" + s + "_" + tag + "_" + prevTag + "_" + prevPrevTag)
+                        self.featureSet.append(f)
+                        triF += 1
+                        self.addToFeatureMap(tag, len(self.featureSet) - 1)
         for p in prefixes:
-            for tag in allTagUnigrams:
-                if allTagUnigrams[tag] > self.medFeatureUniGramMinCount:
-                    f = feature.morphologicalFeature(p,True,tag,"8_pref_" + p + "_" + tag)
-                    self.featureSet.append(f)
-                    uniF += 1
-                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
-            for (tag,prevTag) in allTagBigrams:
-                if allTagBigrams[(tag,prevTag)] > self.medFeatureBiGramMinCount:
-                    f = feature.morphologicalBigramFeature(p,True,tag,prevTag,"9_pref_" + p + "_" + tag + "_" + prevTag)
-                    self.featureSet.append(f)
-                    BiF += 1
-                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
-            for (tag,prevTag,prevPrevTag) in allTagTrigrams:
-                if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.medFeatureTriGramMinCount:
-                    f = feature.morphologicalTrigramFeature(p,True,tag,prevTag,prevPrevTag,"10_pref_" + p + "_" + tag + "_" + prevTag + "_" + prevPrevTag)
-                    self.featureSet.append(f)
-                    triF += 1
-                    self.addToFeatureMap(tag, len(self.featureSet) - 1)
+            if self.includeUniGram:
+                for tag in allTagUnigrams:
+                    if allTagUnigrams[tag] > self.medFeatureUniGramMinCount:
+                        f = feature.morphologicalFeature(p,True,tag,"8_pref_" + p + "_" + tag)
+                        self.featureSet.append(f)
+                        uniF += 1
+                        self.addToFeatureMap(tag, len(self.featureSet) - 1)
+            if self.includeBiGram:
+                for (tag,prevTag) in allTagBigrams:
+                    if allTagBigrams[(tag,prevTag)] > self.medFeatureBiGramMinCount:
+                        f = feature.morphologicalBigramFeature(p,True,tag,prevTag,"9_pref_" + p + "_" + tag + "_" + prevTag)
+                        self.featureSet.append(f)
+                        BiF += 1
+                        self.addToFeatureMap(tag, len(self.featureSet) - 1)
+            if self.includeTriGram:
+                for (tag,prevTag,prevPrevTag) in allTagTrigrams:
+                    if allTagTrigrams[(tag,prevTag,prevPrevTag)] > self.medFeatureTriGramMinCount:
+                        f = feature.morphologicalTrigramFeature(p,True,tag,prevTag,prevPrevTag,"10_pref_" + p + "_" + tag + "_" + prevTag + "_" + prevPrevTag)
+                        self.featureSet.append(f)
+                        triF += 1
+                        self.addToFeatureMap(tag, len(self.featureSet) - 1)
         print "unigram count =",uniF, "BigramCount =",BiF,"trigram count =", triF
+        
+        # fix tag mapping
         for tag in self.tagSet:
             if not self.tagToTagNgramFeatureIndices.has_key(tag):
                 self.tagToTagNgramFeatureIndices[tag] = []
