@@ -6,40 +6,6 @@ import math
 import csv
 
 
-def calcStat(wordDict,outfileSuff,outfilePref):
-        
-        suffToCount = {}
-        prefToCount = {}
-        for word in wordDict:
-            # suff of len 1
-            suff1 = word[-1]
-            suff2 = word[-2:]
-            suff3 = word[-3:]
-            for suff in [suff1,suff2,suff3]:
-                if suffToCount.has_key(suff):
-                    suffToCount[suff] += 1
-                else:
-                    suffToCount[suff] = 1
-            pref1 = word[0]
-            pref2 = word[0:2]
-            pref3 = word[0:3]
-            for pref in [pref1,pref2,pref3]:
-                if prefToCount.has_key(pref):
-                    prefToCount[pref] += 1
-                else:
-                    prefToCount[pref] = 1
-        sorted_suffToCount = sorted(suffToCount.items(), key=operator.itemgetter(1),reverse=True)
-        sorted_prefToCount = sorted(prefToCount.items(), key=operator.itemgetter(1),reverse=True)
-        f = open(outfileSuff,'w');
-        f.write("\n".join('%s %s' % x for x in sorted_suffToCount))
-        f.close()
-        f = open(outfilePref,'w');
-        f.write("\n".join('%s %s' % x for x in sorted_prefToCount))
-        f.close()
-
-# wordfile = "../data/sec2-21/small.words";
-# tagfile = "../data/sec2-21/small.pos";
-
 def processResults(allRes, allTags,filename,writer):
     # init dict 
     tag2counts = {}
@@ -104,16 +70,12 @@ def processResults(allRes, allTags,filename,writer):
 wordfile = "../data/sec2-21/sec2-21.words";
 tagfile = "../data/sec2-21/sec2-21.pos";
  
-lamda = 0.5;
-featureLevel = 1; # basic
-#featureLevel = 2; # med
-#featureLevel = 4; # advanced
 trainingOffset = 0;
 trainingSentenceNum = 5000;
 devSetOffset = trainingSentenceNum;
 devSetSentenceNum = 1500;
 testSetOffset = trainingSentenceNum + devSetSentenceNum;
-testSetSentenceNum = 5000;
+testSetSentenceNum = 2000;
  
 includeUniGram = True
 includeBiGram = False
@@ -132,26 +94,41 @@ verbose = True
 # model.save("basicModelUni.pkl")
 
 
-csvfile = open('tmp.csv', 'w')
+csvfile = open('Saif_a_basic.csv', 'w')
 fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName']
 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 writer.writeheader()
-allFiles = ['advancedModel_5k_lambda_0.5.pkl','advancedModel_5k_lambda_5.pkl','basicModel_5k_lambda_0.5.pkl','basicModel_5k_lambda_5.pkl']
-allFiles = ['basicModel_5k_lambda_5.pkl']
-devSetSentenceNum = 20;
-for modelFileName in allFiles:
-    modelFile = '../../NLP_HW1/models/' + modelFileName
-    model = MEMMModel.MEMMModel(verbose,0,0,0,0)
-    model.load(modelFile)
-    print "model File Name:",modelFile
-    model.summarize();
-    t1 = time.clock()
-    viterbi = ViterbiMEMMModel.ViterbiMEMMModel([model],[1])
-    viterbi.readGoldenFile(wordfile, tagfile, devSetSentenceNum, devSetOffset)
-    allRes = viterbi.tagSentences()
-    t2 = time.clock()
-    print "time to infer: ", t2 - t1
-    processResults(allRes,model.tagSet,modelFileName,writer)
+modelFile = '../../NLP_HW1/models/basicModel_5k_lambda_0.5.pkl'
+model = MEMMModel.MEMMModel(verbose,0,0,0,0)
+model.load(modelFile)
+print "model File Name:",modelFile
+model.summarize();
+t1 = time.clock()
+viterbi = ViterbiMEMMModel.ViterbiMEMMModel([model],[1])
+viterbi.readGoldenFile(wordfile, tagfile, testSetSentenceNum, testSetOffset)
+allRes = viterbi.tagSentences()
+t2 = time.clock()
+print "time to infer: ", t2 - t1
+processResults(allRes,model.tagSet,'basic_saif_a',writer)
+csvfile.close()
+
+
+csvfile = open('Saif_a_advanced.csv', 'w')
+fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName']
+writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+writer.writeheader()
+modelFile = '../../NLP_HW1/models/advancedModel_5k_lambda_0.5.pkl'
+model = MEMMModel.MEMMModel(verbose,0,0,0,0)
+model.load(modelFile)
+print "model File Name:",modelFile
+model.summarize();
+t1 = time.clock()
+viterbi = ViterbiMEMMModel.ViterbiMEMMModel([model],[1])
+viterbi.readGoldenFile(wordfile, tagfile, testSetSentenceNum, testSetOffset)
+allRes = viterbi.tagSentences()
+t2 = time.clock()
+print "time to infer: ", t2 - t1
+processResults(allRes,model.tagSet,'advanced_saif_a',writer)
 csvfile.close()
 
 

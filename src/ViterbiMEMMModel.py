@@ -5,11 +5,11 @@ import time
 
 class ViterbiMEMMModel:
 
-    def __init__(self,MEMMModel):
-        self.MEMMModel= MEMMModel
+    def __init__(self,MEMMModelList,lambdaList):
+        self.MEMMModels= MEMMModelList
+        self.lambdas = lambdaList
         # list of sentence objects (for training)
-        self.tagSet = MEMMModel.tagSet
-        self.optV = MEMMModel.v
+        self.tagSet = self.MEMMModels[0].tagSet
 
     def readFile(self,wordfile, tagfile, numSentences):
         """ read validation file """
@@ -81,26 +81,35 @@ class ViterbiMEMMModel:
         allTagSets = [['*'],['*']]
         for i in range(0,sentence.len):
             word = sentence.word(i)
-            if (self.MEMMModel.dictionary.has_key(word)):
-                currTagSet = [tag for (tag,_) in self.MEMMModel.dictionary[word]]
+            if (self.MEMMModels[0].dictionary.has_key(word)):
+                currTagSet = [tag for (tag,_) in self.MEMMModels[0].dictionary[word]]
             else:
-                currTagSet = self.MEMMModel.tagSet
+                currTagSet = self.MEMMModels[0].tagSet
             allTagSets.append(currTagSet)
-            
             # calc q for all the possibilities
             q = {}
             for tagMinusTwo in allTagSets[i]:
                 q[tagMinusTwo] = {}
                 for tagMinusOne in allTagSets[i+1]:
                     q[tagMinusTwo][tagMinusOne] = {}
-                    norm = 0
+
+                    model2q = []
+                    for model in self.MEMMModels:
+                        norm = 0
+                        model2q.append({})
+                        for tag in allTagSets[i+2]:    
+                            sub_v = [model.v[j] for j in model.tagToFeatureIndices[tag]]
+                            featureVec = model.calcFeatureVecWord(word,tag,tagMinusOne,tagMinusTwo,model.tagToFeatureIndices[tag])
+                            val = math.exp(numpy.dot(featureVec, sub_v))
+                            model2q[-1][tag] = val
+                            norm = norm + val
+                        for tag in allTagSets[i+2]:
+                            model2q[-1][tag] = model2q[-1][tag]/norm
                     for tag in allTagSets[i+2]:
-                        sub_v = [self.optV[j] for j in self.MEMMModel.tagToFeatureIndices[tag]]
-                        featureVec=self.MEMMModel.calcFeatureVecWord(word,tag,tagMinusOne,tagMinusTwo,self.MEMMModel.tagToFeatureIndices[tag])
-                        q[tagMinusTwo][tagMinusOne][tag]=math.exp(numpy.dot(featureVec, sub_v))
-                        norm = norm + q[tagMinusTwo][tagMinusOne][tag]
-                    for tag in allTagSets[i+2]:
-                        q[tagMinusTwo][tagMinusOne][tag]=q[tagMinusTwo][tagMinusOne][tag]/norm
+                        val = 0
+                        for model_i in range(0, len(self.MEMMModels)):
+                            val += model2q[model_i][tag] * self.lambdas[model_i]
+                        q[tagMinusTwo][tagMinusOne][tag] = val
             #print "time to calc q for word",i,time.clock() - q_t1
             pi.append({})
             bp.append({})
@@ -111,7 +120,7 @@ class ViterbiMEMMModel:
                     innerPI = {}
                     for tagMinusTwo in allTagSets[i]:
                         if (i==0):
-                            innerPI[tagMinusTwo] = q[tagMinusTwo][tagMinusOne][tag]/norm
+                            innerPI[tagMinusTwo] = q[tagMinusTwo][tagMinusOne][tag]
                         else:
                             innerPI[tagMinusTwo] = pi[i-1][tagMinusOne][tagMinusTwo]*q[tagMinusTwo][tagMinusOne][tag]
                     m=max(innerPI.values())
