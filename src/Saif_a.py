@@ -23,6 +23,8 @@ def processResults(allRes, allTags,filename,writer):
             goldTag = gold[i]
             predictedTag = predicted[i]
             tag2counts[goldTag]['totalGold'] += 1
+            if predictedTag == '*':
+                print predictedTag
             tag2counts[predictedTag]['totalPredicted'] += 1
             if goldTag == predictedTag:
                 tag2counts[goldTag]['correctPred'] += 1
@@ -92,27 +94,6 @@ verbose = True
 #                         trainingSentenceNum,includeUniGram,includeBiGram,includeTriGram)
 # model.trainModel()
 # model.save("basicModelUni.pkl")
-
-
-csvfile = open('Saif_a_basic.csv', 'w')
-fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName']
-writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-writer.writeheader()
-modelFile = '../../NLP_HW1/models/basicModel_5k_lambda_0.5.pkl'
-model = MEMMModel.MEMMModel(verbose,0,0,0,0)
-model.load(modelFile)
-print "model File Name:",modelFile
-model.summarize();
-t1 = time.clock()
-viterbi = ViterbiMEMMModel.ViterbiMEMMModel([model],[1])
-viterbi.readGoldenFile(wordfile, tagfile, testSetSentenceNum, testSetOffset)
-allRes = viterbi.tagSentences()
-t2 = time.clock()
-print "time to infer: ", t2 - t1
-processResults(allRes,model.tagSet,'basic_saif_a',writer)
-csvfile.close()
-
-
 csvfile = open('Saif_a_advanced.csv', 'w')
 fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName']
 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -131,7 +112,23 @@ print "time to infer: ", t2 - t1
 processResults(allRes,model.tagSet,'advanced_saif_a',writer)
 csvfile.close()
 
-
+csvfile = open('Saif_a_basic.csv', 'w')
+fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName']
+writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+writer.writeheader()
+modelFile = '../../NLP_HW1/models/basicModel_5k_lambda_0.5.pkl'
+model = MEMMModel.MEMMModel(verbose,0,0,0,0)
+model.load(modelFile)
+print "model File Name:",modelFile
+model.summarize();
+t1 = time.clock()
+viterbi = ViterbiMEMMModel.ViterbiMEMMModel([model],[1])
+viterbi.readGoldenFile(wordfile, tagfile, testSetSentenceNum, testSetOffset)
+allRes = viterbi.tagSentences()
+t2 = time.clock()
+print "time to infer: ", t2 - t1
+processResults(allRes,model.tagSet,'basic_saif_a',writer)
+csvfile.close()
 
 
 #winsound.PlaySound("../yofi_sehel.wav",winsound.SND_FILENAME)

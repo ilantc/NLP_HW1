@@ -130,12 +130,13 @@ class ViterbiMEMMModel:
         m=0
         t= [0] * sentence.len
         n=sentence.len-1
-        for tagN in allTagSets[i+2]:
-            for tagNMinusOne in allTagSets[i+1]:
+        for tagN in allTagSets[n+2]:
+            for tagNMinusOne in allTagSets[n+1]:
                 if pi[n][tagN][tagNMinusOne] > m :
                     m=pi[n][tagN][tagNMinusOne]
                     t[n] =  tagN
-                    t[n-1] = tagNMinusOne
+                    if n > 0:
+                        t[n-1] = tagNMinusOne
         for i in range(0,n-1):
             j=n-2-i
             t[j] = bp[j+2][t[j+2]][t[j+1]]
