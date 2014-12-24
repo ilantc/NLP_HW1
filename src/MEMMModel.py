@@ -55,15 +55,16 @@ class MEMMModel:
               "\n\tnum words                 =", len(self.allWordsFeatureVecs), \
               "\n\tminFeatureCount           =", self.minFeatureCount, \
               "\n\tnum features              =", self.featureNum
-        if self.featureLevel == 1:
-            print "\t\t#wordTag", self.countWordTag,\
-                  "\t\t#tagUni ", self.countTagUni, \
-                  "\t\t#tagBi  ", self.countTagBi, \
-                  "\t\t#tagTri ",self.countTagTri
-        elif self.featureLevel == 2:
-            print "\t\t#morphUni", self.morphologicUni, \
-                  "\t\t#morphBi ", self.morphologicBi, \
-                  "\t\t#morphTri", self.morphologicTri
+        if hasattr(self,'featureLevel'):
+            if self.featureLevel == 1:
+                print "\t\t#wordTag", self.countWordTag,\
+                      "\t\t#tagUni ", self.countTagUni, \
+                      "\t\t#tagBi  ", self.countTagBi, \
+                      "\t\t#tagTri ",self.countTagTri
+            elif self.featureLevel == 2:
+                print "\t\t#morphUni", self.morphologicUni, \
+                      "\t\t#morphBi ", self.morphologicBi, \
+                      "\t\t#morphTri", self.morphologicTri
     
     def show(self):
         """ heavy printing - use only for debugging of very small models"""
