@@ -94,6 +94,7 @@ fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','co
 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 writer.writeheader()
 path = '../../NLP_HW1/models/'
+
 modelFileNameUni = path + 'basicModelUni.pkl'
 modelFileNameBi  = path + 'basicModelUniBi.pkl'
 modelFileNameTri = path + 'basicModel_5k_lambda_0.5.pkl'
@@ -128,8 +129,8 @@ for currLam in lamdas:
     processResults(allRes,modelUni.tagSet,'basic_' + str(currLam[2]) + "," + str(currLam[1]) + "," + str(currLam[0]),writer)
 
 modelFileNameUni = path + 'advancedModelUni.pkl'
-modelFileNameBi  = path + 'modelsModelUniBi.pkl'
-modelFileNameTri = path + 'modelsModel_5k_lambda_0.5.pkl'
+modelFileNameBi  = path + 'advancedModelUniBi.pkl'
+modelFileNameTri = path + 'advancedModel_5k_lambda_0.5.pkl'
 
 modelUni = MEMMModel.MEMMModel(verbose,0,0,0,0)
 modelUni.load(modelFileNameUni)
