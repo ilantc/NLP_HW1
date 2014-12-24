@@ -95,7 +95,7 @@ writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 writer.writeheader()
 path = '../../NLP_HW1/models/'
 modelFileNameBasic = path + 'basicModel_5k_lambda_0.5.pkl'
-modelFileNameAdvanced = path + 'modelsModel_5k_lambda_0.5.pkl'
+modelFileNameAdvanced = path + 'advancedModel_5k_lambda_0.5.pkl'
 
 
 modelBasic = MEMMModel.MEMMModel(verbose,0,0,0,0)
