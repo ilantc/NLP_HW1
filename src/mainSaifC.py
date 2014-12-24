@@ -121,7 +121,7 @@ for currLam in lamdas:
     allRes = viterbi.tagSentences()
     t2 = time.clock()
     print "time to infer: ", t2 - t1
-    processResults(allRes,modelBasic.tagSet,currLam[0] + "," + currLam[1],writer)
+    processResults(allRes,modelBasic.tagSet,str(currLam[0]) + "," + str(currLam[1]),writer)
 
 csvfile.close()
 

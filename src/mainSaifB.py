@@ -125,7 +125,7 @@ for currLam in lamdas:
     allRes = viterbi.tagSentences()
     t2 = time.clock()
     print "time to infer: ", t2 - t1
-    processResults(allRes,modelUni.tagSet,'basic_' + currLam[2] + "," + currLam[1] + "," + currLam[0],writer)
+    processResults(allRes,modelUni.tagSet,'basic_' + str(currLam[2]) + "," + str(currLam[1]) + "," + str(currLam[0]),writer)
 
 modelFileNameUni = path + 'advancedModelUni.pkl'
 modelFileNameBi  = path + 'modelsModelUniBi.pkl'
@@ -145,7 +145,7 @@ for currLam in lamdas:
     allRes = viterbi.tagSentences()
     t2 = time.clock()
     print "time to infer: ", t2 - t1
-    processResults(allRes,modelUni.tagSet,'basic_' + currLam[2] + "," + currLam[1] + "," + currLam[0],writer)
+    processResults(allRes,modelUni.tagSet,'advanced_' + str(currLam[2]) + "," + str(currLam[1]) + "," + str(currLam[0]),writer)
 
 csvfile.close()
 
