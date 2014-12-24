@@ -1,8 +1,6 @@
 import MEMMModel;
 import ViterbiMEMMModel;
 import time;
-import operator
-import math
 import csv
 
 
@@ -88,14 +86,9 @@ medFeaturesUniCount = 800
 medFeaturesBiCount = 800
 medFeaturesTriCount = 400
 verbose = True
-# 
-# model = MEMMModel.MEMMModel(verbose,basicFeaturesMinWordCount,medFeaturesUniCount,medFeaturesBiCount,medFeaturesTriCount)
-# model.initModelFromFile("../data/sec2-21/sec2-21.words", "../data/sec2-21/sec2-21.pos", lamda, featureLevel, \
-#                         trainingSentenceNum,includeUniGram,includeBiGram,includeTriGram)
-# model.trainModel()
-# model.save("basicModelUni.pkl")
+
 csvfile = open('Saif_a_advanced.csv', 'w')
-fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName']
+fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName','f * goldCount']
 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 writer.writeheader()
 modelFile = '../../NLP_HW1/models/advancedModel_5k_lambda_0.5.pkl'
@@ -113,7 +106,7 @@ processResults(allRes,model.tagSet,'advanced_saif_a',writer)
 csvfile.close()
 
 csvfile = open('Saif_a_basic.csv', 'w')
-fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName']
+fieldnames = ['tag', 'precision', 'recall', 'fscore','goldCount','predCount','correctPred','fileName','f * goldCount']
 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 writer.writeheader()
 modelFile = '../../NLP_HW1/models/basicModel_5k_lambda_0.5.pkl'
