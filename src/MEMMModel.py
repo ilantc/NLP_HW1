@@ -333,8 +333,8 @@ class MEMMModel:
                 
         
     def initMediumFeatures(self,allTagUnigrams,allTagBigrams,allTagTrigrams):
-        suffixes = ['s','e','ed','y','n','ing','t','es','l','er','ly','ion','ted','ers','ent','ons','ies']
-        prefixes = ['re','co','in','pr','de','st','con','di','pro']
+        suffixes = ['s','e','ed','y','n','ing','t','es','l','er','ly','ion','ted','ers','ent','ons','ies'] # 17 
+        prefixes = ['re','co','in','pr','de','st','con','di','pro'] # 9
         morphologicUni = 0
         morphologicBi = 0
         morphologicTri = 0
