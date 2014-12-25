@@ -54,6 +54,7 @@ class MEMMModel:
               "\n\tlamda                     =", self.lamda, \
               "\n\tnum words                 =", len(self.allWordsFeatureVecs), \
               "\n\tminFeatureCount           =", self.minFeatureCount, \
+              "\n\tnum tokens                =", len(self.dictionary.keys()), \
               "\n\tnum features              =", self.featureNum
         if hasattr(self,'featureLevel'):
             if self.featureLevel == 1:

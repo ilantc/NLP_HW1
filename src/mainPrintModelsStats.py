@@ -1,9 +1,4 @@
 import MEMMModel;
-import ViterbiMEMMModel;
-import time;
-import operator
-import math
-import csv
 
 
 
@@ -19,7 +14,7 @@ trainingSentenceNum = 5000;
 devSetOffset = trainingSentenceNum;
 devSetSentenceNum = 1500;
 testSetOffset = trainingSentenceNum + devSetSentenceNum;
-testSetSentenceNum = 5000;
+testSetSentenceNum = 2000;
  
 includeUniGram = True
 includeBiGram = True

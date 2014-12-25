@@ -113,7 +113,7 @@ trainingSentenceNum = 5000;
 devSetOffset = trainingSentenceNum;
 devSetSentenceNum = 1500;
 testSetOffset = trainingSentenceNum + devSetSentenceNum;
-testSetSentenceNum = 5000;
+testSetSentenceNum = 2000;
  
 includeUniGram = True
 includeBiGram = False
