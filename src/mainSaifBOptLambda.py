@@ -111,7 +111,7 @@ viterbi.readGoldenFile(wordfile, tagfile, testSetSentenceNum, testSetOffset)
 allRes = viterbi.tagSentences()
 t2 = time.clock()
 print "time to infer: ", t2 - t1
-processResults(allRes,modelUni.tagSet,'saif_b_basic_' + str(0.5) + "," + str(0.5) + "," + str(0.0),writer)
+processResults(allRes,modelBi.tagSet,'saif_b_basic_' + str(0.5) + "," + str(0.5) + "," + str(0.0),writer)
 
 modelFileNameUni = path + 'advancedModelUni.pkl'
 modelFileNameBi  = path + 'advancedModelUniBi.pkl'
